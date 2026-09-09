@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Mori Browser Extension",
+  "version": "0.1.0",
+  "description": "Opt-in browser-side runtime companion for Mori.",
+  "permissions": ["storage", "tabs", "webNavigation"],
+  "action": {
+    "default_title": "Mori Browser Extension",
+    "default_popup": "src/popup.html"
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "incognito": "not_allowed"
+}

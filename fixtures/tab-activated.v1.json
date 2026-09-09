@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "source": "browser",
+  "kind": "tab_activated",
+  "observedAt": "2026-09-09T00:01:00.000Z",
+  "payload": {
+    "runtime": {
+      "provider": "chrome",
+      "label": "Chromium",
+      "installationId": "Mori Browser Extension",
+      "version": "0.1.0",
+      "observedAt": "2026-09-09T00:01:00.000Z"
+    },
+    "activeInfo": {
+      "tabId": 21,
+      "windowId": 3
+    },
+    "tab": {
+      "id": 21,
+      "windowId": 3,
+      "active": true,
+      "url": "https://example.com/a"
+    },
+    "window": {
+      "id": 3,
+      "focused": true,
+      "incognito": false,
+      "tabs": []
+    },
+    "urlDetailPolicy": "origin-path"
+  }
+}

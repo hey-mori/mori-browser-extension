@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "source": "browser",
+  "kind": "navigation_committed",
+  "observedAt": "2026-09-09T00:02:00.000Z",
+  "payload": {
+    "runtime": {
+      "provider": "chrome",
+      "label": "Chromium",
+      "installationId": "Mori Browser Extension",
+      "version": "0.1.0",
+      "observedAt": "2026-09-09T00:02:00.000Z"
+    },
+    "details": {
+      "tabId": 21,
+      "url": "https://docs.oracle.com/en-us/iaas/",
+      "timeStamp": 1788912120000,
+      "transitionType": "link",
+      "transitionQualifiers": ["server_redirect"]
+    },
+    "tab": {
+      "id": 21,
+      "windowId": 3,
+      "active": true,
+      "url": "https://docs.oracle.com/en-us/iaas/"
+    },
+    "urlDetailPolicy": "origin-path"
+  }
+}
