@@ -17,7 +17,7 @@ const forbiddenPermissions = [
 ];
 
 assert.equal(manifest.manifest_version, 3);
-assert.deepEqual(manifest.permissions, ["storage", "tabs", "webNavigation"]);
+assert.deepEqual(manifest.permissions, ["storage", "tabs", "webNavigation", "nativeMessaging"]);
 assert.equal(manifest.host_permissions, undefined);
 assert.equal(manifest.content_scripts, undefined);
 assert.equal(manifest.incognito, "not_allowed");
@@ -27,7 +27,16 @@ assert.deepEqual(
 );
 assert.equal(JSON.stringify(manifest).includes("<all_urls>"), false);
 
-for (const path of ["src/background.js", "src/core/moriBrowserExtensionCore.js", "src/popup.html", "src/popup.js"]) {
+for (const path of [
+  "src/background.js",
+  "src/backgroundController.js",
+  "src/core/moriBrowserExtensionCore.js",
+  "src/popup.html",
+  "src/popup.js",
+  "src/transport/nativeMessagingClient.js",
+  "scripts/chrome-native-smoke.mjs",
+  "scripts/lib/chromeNativeSmokeSupport.mjs",
+]) {
   readFileSync(join(root, path), "utf8");
 }
 

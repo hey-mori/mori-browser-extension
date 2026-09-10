@@ -3,7 +3,7 @@
   "name": "Mori Browser Extension",
   "version": "0.1.0",
   "description": "Opt-in browser-side runtime companion for Mori.",
-  "permissions": ["storage", "tabs", "webNavigation"],
+  "permissions": ["storage", "tabs", "webNavigation", "nativeMessaging"],
   "action": {
     "default_title": "Mori Browser Extension",
     "default_popup": "src/popup.html"
