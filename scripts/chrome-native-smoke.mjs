@@ -12,6 +12,7 @@ import {
   makeTempProfilePrefix,
   nativeHostManifestPath,
   parseChromeVersion,
+  readDevToolsListeningLine,
   parseSmokeArgs,
   readDevToolsActivePort,
   resolveSmokePaths,
@@ -135,8 +136,15 @@ async function runHappyPath({ options, paths, registry, result }) {
         const offState = await setCaptureFromPopup(chrome.cdp, popup.sessionId, false);
         if (offState.checked !== false) throw new Error("Popup did not turn capture off.");
         await triggerNavigation(chrome.cdp, AFTER_OFF_URL);
-        await sleep(750);
-        const afterOffState = await readExtensionStorage(chrome.cdp, popup.sessionId);
+        const afterOffState = await waitForStorage(chrome.cdp, popup.sessionId, (state) => {
+          const transport = state.session[TRANSPORT_STATE_KEY];
+          return state.local[CAPTURE_STATE_KEY]?.captureEnabled === false &&
+            !storageText(state).includes("after-off") &&
+            !storageText(state).includes("token=later") &&
+            !storageText(state).includes("#hidden") &&
+            transport?.state === "disconnected" &&
+            transport?.lastError === null;
+        }, "capture-off transport disconnect");
         result.captureOffBlocked =
           afterOffState.local[CAPTURE_STATE_KEY]?.captureEnabled === false &&
           !storageText(afterOffState).includes("after-off") &&
@@ -262,7 +270,7 @@ async function launchChrome({ chromePath, profileDir, env }) {
       try {
         return readDevToolsActivePort(readFileSync(devToolsFile, "utf8"));
       } catch {
-        return null;
+        return readDevToolsListeningLine(stderr);
       }
     }, "Chrome DevToolsActivePort", {
       timeoutMs: 20000,
@@ -584,6 +592,7 @@ class CdpConnection {
     this.nextId = 1;
     this.pending = new Map();
     this.socket = null;
+    this.commandTimeoutMs = 10000;
   }
 
   async connect() {
@@ -599,7 +608,8 @@ class CdpConnection {
       this.handleMessage(event.data);
     });
     this.socket.addEventListener("close", () => {
-      for (const { reject } of this.pending.values()) {
+      for (const { reject, timeout } of this.pending.values()) {
+        clearTimeout(timeout);
         reject(new Error("CDP socket closed."));
       }
       this.pending.clear();
@@ -612,7 +622,11 @@ class CdpConnection {
     if (sessionId) message.sessionId = sessionId;
     const body = JSON.stringify(message);
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
+      const timeout = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`Timed out waiting for CDP ${method}.`));
+      }, this.commandTimeoutMs);
+      this.pending.set(id, { resolve, reject, timeout });
       this.socket.send(body);
     });
   }
@@ -627,6 +641,7 @@ class CdpConnection {
     const pending = this.pending.get(message.id);
     if (!pending) return;
     this.pending.delete(message.id);
+    clearTimeout(pending.timeout);
     if (message.error) {
       pending.reject(new Error(`${message.error.message || "CDP error"} (${message.error.code})`));
     } else {

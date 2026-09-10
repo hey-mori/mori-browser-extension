@@ -81,6 +81,28 @@ describe("background controller native transport", () => {
     assert.deepEqual(runtimeApi.storage.session.data[RECENT_EVENTS_KEY], []);
   });
 
+  it("drops observations whose async lookup finishes after capture is disabled", async () => {
+    const nativeTransport = createFakeTransport();
+    const delayedTab = createDeferred();
+    const runtimeApi = createFakeRuntimeApi({
+      async getTab() {
+        return delayedTab.promise;
+      },
+    });
+    const controller = createMoriBrowserBackground({ runtimeApi, nativeTransport, debugLog: noop });
+
+    await controller.setCaptureEnabled(true);
+    const activation = controller.handleTabActivated({ tabId: 21, windowId: 3 });
+    await controller.setCaptureEnabled(false);
+    delayedTab.resolve(runtimeApi.fixtures.tab);
+    await activation;
+
+    assert.equal(nativeTransport.sent.length, 1);
+    assert.equal(nativeTransport.sent[0].kind, "context_snapshot");
+    assert.deepEqual(runtimeApi.storage.session.data[RECENT_EVENTS_KEY], []);
+    assert.deepEqual(runtimeApi.storage.session.data[LAST_SNAPSHOT_KEY], null);
+  });
+
   it("records Mori unavailable acknowledgements in debug state", async () => {
     const nativeTransport = createFakeTransport({
       sendResult: {
@@ -141,7 +163,7 @@ function createFakeTransport({
 
 function noop() {}
 
-function createFakeRuntimeApi() {
+function createFakeRuntimeApi({ getTab, getWindow, getAllWindows } = {}) {
   const manifest = { name: "Mori Browser Extension", version: "0.1.0" };
   const tab = {
     id: 21,
@@ -164,20 +186,27 @@ function createFakeRuntimeApi() {
         return manifest;
       },
     },
+    fixtures: {
+      tab,
+      window,
+    },
     storage: {
       local: createStorageArea(),
       session: createStorageArea(),
     },
     tabs: {
       async get() {
+        if (getTab) return getTab();
         return tab;
       },
     },
     windows: {
       async get() {
+        if (getWindow) return getWindow();
         return { id: 3, focused: true, incognito: false };
       },
       async getAll() {
+        if (getAllWindows) return getAllWindows();
         return [window];
       },
     },
@@ -198,4 +227,14 @@ function createStorageArea() {
       Object.assign(this.data, values);
     },
   };
+}
+
+function createDeferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((innerResolve, innerReject) => {
+    resolve = innerResolve;
+    reject = innerReject;
+  });
+  return { promise, resolve, reject };
 }
