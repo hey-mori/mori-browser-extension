@@ -109,6 +109,7 @@ Run the local checks:
 ```bash
 npm test
 npm run validate
+npm run smoke:chrome-native
 ```
 
 There is no build step yet. The current source is a plain Manifest V3 extension.
@@ -119,9 +120,10 @@ The extension connects with `chrome.runtime.connectNative()` only after browser
 capture is explicitly enabled. Capture off means no Browser observations are
 sent and the Native Messaging port is closed.
 
-The native host is owned by `swarea/mori` and must be registered separately for
-the unpacked extension id that Chrome assigns during development. Do not commit
-that temporary id to source.
+The native host is owned by `swarea/mori`. Development smoke tooling loads this
+unpacked extension in an isolated Chrome profile, reads the extension id that
+Chrome assigns at runtime, and registers the native host for that id. Do not
+commit a temporary unpacked id to source.
 
 Typical local path for the Mori helper after building the relay worktree:
 
@@ -129,8 +131,8 @@ Typical local path for the Mori helper after building the relay worktree:
 C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe
 ```
 
-Register the host for Chrome from the Mori worktree after copying the actual
-extension id from `chrome://extensions`:
+Manual registration is still possible from the Mori worktree after copying the
+actual extension id from `chrome://extensions`:
 
 ```powershell
 .\connectors\browser-native\install-native-host.ps1 -Browser chrome -HostPath "C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe" -ExtensionId "<actual unpacked extension id>"
@@ -138,6 +140,44 @@ extension id from `chrome://extensions`:
 
 The popup debug section reports a compact Mori transport state such as
 `connected`, `mori_unavailable`, or `disconnected`.
+
+## Chrome Native Smoke
+
+The canonical development smoke is:
+
+```powershell
+npm run smoke:chrome-native -- --mori-worktree "C:\dev\mori-browser-native-host-dev"
+```
+
+Prerequisites:
+
+- Google Chrome is installed, or `--chrome-path` points to `chrome.exe`.
+- Mori Desktop is already running from the Mori browser relay worktree.
+- The native host helper has been built at
+  `C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe`,
+  or `--native-host-path` points to another helper executable.
+
+The smoke harness:
+
+1. starts Google Chrome with a temporary profile;
+2. enables development-only CDP extension debugging;
+3. loads this unpacked extension with `Extensions.loadUnpacked`;
+4. registers `com.swarea.mori.browser` for the returned extension id by reusing
+   Mori's Native Messaging installer script;
+5. toggles capture through the extension popup page;
+6. verifies `context_snapshot`, `navigation_committed`, `tab_activated`,
+   capture-off blocking, URL sanitization, `mori_unavailable`, and host-missing
+   failure handling;
+7. restores the previous Chrome Native Messaging registration and removes the
+   temporary Chrome profile.
+
+CDP is a smoke-test driver only. The extension runtime does not import or call
+CDP, and production Mori does not depend on CDP.
+
+The script prints a machine-readable JSON summary and exits non-zero when a
+required check fails. The `mori_unavailable` check uses a temporary relay name
+that no Mori Desktop instance is expected to serve, so the same local IPC
+failure semantics can be tested without stopping the developer's running Mori.
 
 ## Load Unpacked
 

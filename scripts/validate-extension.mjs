@@ -34,6 +34,8 @@ for (const path of [
   "src/popup.html",
   "src/popup.js",
   "src/transport/nativeMessagingClient.js",
+  "scripts/chrome-native-smoke.mjs",
+  "scripts/lib/chromeNativeSmokeSupport.mjs",
 ]) {
   readFileSync(join(root, path), "utf8");
 }
