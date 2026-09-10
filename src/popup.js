@@ -1,6 +1,7 @@
 const toggle = document.querySelector("#capture-toggle");
 const snapshotStatus = document.querySelector("#snapshot-status");
 const eventStatus = document.querySelector("#event-status");
+const transportStatus = document.querySelector("#transport-status");
 const bootstrapButton = document.querySelector("#bootstrap-button");
 
 async function send(message) {
@@ -18,6 +19,7 @@ async function refresh() {
     snapshot?.payload?.windows?.reduce((count, window) => count + (window.tabs?.length ?? 0), 0) ?? 0;
   snapshotStatus.textContent = snapshot ? `Snapshot: ${windows} windows, ${tabs} tabs` : "Snapshot: none";
   eventStatus.textContent = `Events: ${state.recentEvents?.length ?? 0}`;
+  transportStatus.textContent = transportLabel(state.transport);
 }
 
 toggle.addEventListener("change", async () => {
@@ -33,3 +35,13 @@ bootstrapButton.addEventListener("click", async () => {
 refresh().catch(() => {
   snapshotStatus.textContent = "Snapshot: unavailable";
 });
+
+function transportLabel(transport) {
+  const state = transport?.state || "disconnected";
+  const detail =
+    transport?.lastError?.message ||
+    transport?.lastAcknowledgement?.code ||
+    transport?.lastAcknowledgement?.kind ||
+    "";
+  return detail ? `Mori: ${state} (${detail})` : `Mori: ${state}`;
+}

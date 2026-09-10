@@ -25,7 +25,12 @@ describe("manifest permissions", () => {
   it("uses the minimal Chromium extension permissions", () => {
     const extensionManifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
     assert.equal(extensionManifest.manifest_version, 3);
-    assert.deepEqual(extensionManifest.permissions, ["storage", "tabs", "webNavigation"]);
+    assert.deepEqual(extensionManifest.permissions, [
+      "storage",
+      "tabs",
+      "webNavigation",
+      "nativeMessaging",
+    ]);
     assert.equal(extensionManifest.host_permissions, undefined);
     assert.equal(extensionManifest.content_scripts, undefined);
     assert.equal(extensionManifest.incognito, "not_allowed");

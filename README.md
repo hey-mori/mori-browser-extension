@@ -15,7 +15,7 @@ Extracted from the initial Browser runtime prototype developed inside
 - Keep browser capture explicitly opt-in.
 - Request minimal browser permissions.
 - Apply browser-side privacy filtering before observations leave the extension.
-- Eventually transport observations to Mori.
+- Transport sanitized observations to Mori through Chromium Native Messaging.
 
 ## Non-Responsibilities
 
@@ -38,8 +38,8 @@ The extension can observe, only after explicit opt-in:
 
 The extension stores `captureEnabled` in `chrome.storage.local` so the Manifest
 V3 service worker can restart without losing the user's opt-in choice. Sanitized
-debug snapshots and events are stored in `chrome.storage.session`, not in Mori's
-app storage.
+debug snapshots, events, and Native Messaging status are stored in
+`chrome.storage.session`, not in Mori's app storage.
 
 ## Observation Contract
 
@@ -75,6 +75,12 @@ when the extension has `tabs` or suitable host permissions.
 
 `webNavigation` is used for `onCommitted`.
 
+`nativeMessaging` is used to connect to the Mori native host:
+
+```text
+com.swarea.mori.browser
+```
+
 No host permissions are requested in this shell. No `history`, `cookies`,
 `webRequest`, `scripting`, `downloads`, `bookmarks`, clipboard, or content
 script permissions are requested.
@@ -107,30 +113,65 @@ npm run validate
 
 There is no build step yet. The current source is a plain Manifest V3 extension.
 
+## Native Messaging Development
+
+The extension connects with `chrome.runtime.connectNative()` only after browser
+capture is explicitly enabled. Capture off means no Browser observations are
+sent and the Native Messaging port is closed.
+
+The native host is owned by `swarea/mori` and must be registered separately for
+the unpacked extension id that Chrome assigns during development. Do not commit
+that temporary id to source.
+
+Typical local path for the Mori helper after building the relay worktree:
+
+```text
+C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe
+```
+
+Register the host for Chrome from the Mori worktree after copying the actual
+extension id from `chrome://extensions`:
+
+```powershell
+.\connectors\browser-native\install-native-host.ps1 -Browser chrome -HostPath "C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe" -ExtensionId "<actual unpacked extension id>"
+```
+
+The popup debug section reports a compact Mori transport state such as
+`connected`, `mori_unavailable`, or `disconnected`.
+
 ## Load Unpacked
 
 1. Open `chrome://extensions`.
 2. Enable Developer mode.
 3. Choose Load unpacked.
 4. Select this repository directory.
-5. Open the Mori Browser Extension popup and turn capture on.
+5. Copy the assigned extension id.
+6. Register the Mori native host with that id.
+7. Open the Mori Browser Extension popup and turn capture on.
 
 ## Manual Smoke Procedure
 
 1. Confirm capture is off by default.
 2. Turn capture on in the popup.
-3. Click Refresh Snapshot and confirm the debug snapshot count updates.
+3. Confirm Mori Desktop from `C:\dev\mori-browser-native-host-dev` is running.
 4. Activate a normal web tab.
 5. Navigate that tab to a URL with query and fragment, for example
    `https://example.com/a?token=123#secret`.
-6. Confirm the service worker console logs sanitized events.
-7. Confirm popup event count increases.
+6. Confirm the popup reports the Mori transport state.
+7. Confirm the service worker console logs sanitized events and acknowledgements.
 8. Turn capture off.
-9. Switch or navigate tabs again and confirm event count no longer increases.
+9. Switch or navigate tabs again and confirm event count no longer increases
+   and no new observations are sent.
 
 ## Transport
 
-Transport to the Mori app is deferred. The current shell keeps sanitized
-extension-local debug output only. Future candidates are native messaging for
-the desktop app or an explicit local connector file handoff. A local HTTP or
-WebSocket server should only be added with a separate threat model.
+Native Messaging is the extension-to-host transport. The extension sends
+Browser observation envelopes, not Mori `TraceEvent` objects. The native host
+relays those envelopes to running Mori Desktop, where Mori's Browser ingress
+accepts or rejects them.
+
+The client uses a small `runtime.Port` created by `connectNative()`. The port is
+opened lazily when capture is on, closed when capture is turned off, and
+recreated on the next observation if the Manifest V3 service worker restarts or
+the native host disconnects. There is no offline queue, retry loop, heartbeat,
+local HTTP server, WebSocket server, or file-per-event spool.
