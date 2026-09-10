@@ -14,6 +14,7 @@ import {
   parseChromeVersion,
   parseSmokeArgs,
   readDevToolsActivePort,
+  readDevToolsListeningLine,
 } from "../scripts/lib/chromeNativeSmokeSupport.mjs";
 
 describe("chrome native smoke support", () => {
@@ -89,6 +90,16 @@ describe("chrome native smoke support", () => {
       browserWebSocketPath: "/devtools/browser/abc",
       browserWebSocketUrl: "ws://127.0.0.1:9222/devtools/browser/abc",
     });
+    assert.deepEqual(
+      readDevToolsListeningLine(
+        "DevTools listening on ws://127.0.0.1:59412/devtools/browser/8acb",
+      ),
+      {
+        port: 59412,
+        browserWebSocketPath: "/devtools/browser/8acb",
+        browserWebSocketUrl: "ws://127.0.0.1:59412/devtools/browser/8acb",
+      },
+    );
   });
 
   it("fails only required smoke result checks that were not skipped", () => {

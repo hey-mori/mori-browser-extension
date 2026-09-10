@@ -230,6 +230,17 @@ export function readDevToolsActivePort(text) {
   };
 }
 
+export function readDevToolsListeningLine(text) {
+  const match = String(text).match(/DevTools listening on (ws:\/\/[^\s]+)/);
+  if (!match) return null;
+  const url = new URL(match[1]);
+  return {
+    port: Number(url.port),
+    browserWebSocketPath: `${url.pathname}${url.search}`,
+    browserWebSocketUrl: match[1],
+  };
+}
+
 export function makeTempProfilePrefix() {
   return path.join(os.tmpdir(), "mori-browser-smoke-");
 }
