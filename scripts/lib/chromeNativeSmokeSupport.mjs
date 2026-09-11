@@ -27,6 +27,8 @@ export function parseSmokeArgs(argv, env = process.env) {
     moriWorktree: env.MORI_WORKTREE || "",
     nativeHostPath: env.MORI_BROWSER_NATIVE_HOST_PATH || "",
     keepProfile: env.MORI_BROWSER_SMOKE_KEEP_PROFILE === "1",
+    registrationMode: env.MORI_BROWSER_SMOKE_REGISTRATION_MODE || "temporary",
+    expectedManifestPath: env.MORI_BROWSER_NATIVE_HOST_MANIFEST_PATH || "",
     skipMoriUnavailable: false,
     skipHostMissing: false,
   };
@@ -41,6 +43,10 @@ export function parseSmokeArgs(argv, env = process.env) {
       options.nativeHostPath = readArgValue(argv, ++index, arg);
     } else if (arg === "--keep-profile") {
       options.keepProfile = true;
+    } else if (arg === "--registration-mode") {
+      options.registrationMode = readArgValue(argv, ++index, arg);
+    } else if (arg === "--expected-manifest-path") {
+      options.expectedManifestPath = readArgValue(argv, ++index, arg);
     } else if (arg === "--skip-mori-unavailable") {
       options.skipMoriUnavailable = true;
     } else if (arg === "--skip-host-missing") {
@@ -50,6 +56,10 @@ export function parseSmokeArgs(argv, env = process.env) {
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
+  }
+
+  if (!["temporary", "existing"].includes(options.registrationMode)) {
+    throw new Error("--registration-mode must be temporary or existing.");
   }
 
   return options;
@@ -64,6 +74,9 @@ export function usage() {
     "  --mori-worktree <path>      Mori worktree that owns connectors/browser-native.",
     "  --native-host-path <path>   mori-browser-native-host executable path.",
     "  --keep-profile             Keep temporary Chrome profiles for debugging.",
+    "  --registration-mode <mode>  temporary or existing Native Messaging registration.",
+    "  --expected-manifest-path <path>",
+    "                              Existing registration manifest expected in packaged mode.",
     "  --skip-mori-unavailable    Skip the unavailable-relay failure scenario.",
     "  --skip-host-missing        Skip the missing native host registration scenario.",
     "",
@@ -111,17 +124,25 @@ export function discoverChromePath(explicitPath = "", candidates = DEFAULT_CHROM
   );
 }
 
-export function validatePrerequisites({ extensionRoot, moriWorktree, nativeHostPath }) {
+export function validatePrerequisites({
+  extensionRoot,
+  moriWorktree,
+  nativeHostPath,
+  registrationMode = "temporary",
+}) {
   const installScript = nativeHostInstallScript(moriWorktree);
   const manifestPath = path.join(extensionRoot, "manifest.json");
   const missing = [
     ["extension manifest", manifestPath],
-    ["Mori native host installer", installScript],
     ["native host binary", nativeHostPath],
-  ].filter(([, filePath]) => !existsSync(filePath));
+  ];
+  if (registrationMode === "temporary") {
+    missing.push(["Mori native host installer", installScript]);
+  }
+  const absent = missing.filter(([, filePath]) => !existsSync(filePath));
 
-  if (missing.length > 0) {
-    const details = missing.map(([label, filePath]) => `${label}: ${filePath}`).join("\n");
+  if (absent.length > 0) {
+    const details = absent.map(([label, filePath]) => `${label}: ${filePath}`).join("\n");
     throw new Error(`Required smoke prerequisite not found:\n${details}`);
   }
 }
