@@ -79,6 +79,28 @@ describe("privacy and opt-in defaults", () => {
       },
     );
   });
+
+  it("does not capture page titles unless explicitly configured", () => {
+    const tab = {
+      id: 1,
+      windowId: 1,
+      active: true,
+      url: "https://example.com/research?token=secret#private",
+      title: "Sensitive page title",
+    };
+
+    assert.deepEqual(sanitizeTab(tab), {
+      id: 1,
+      windowId: 1,
+      active: true,
+      url: "https://example.com/research",
+    });
+    assert.equal(JSON.stringify(sanitizeTab(tab)).includes("Sensitive page title"), false);
+    assert.equal(
+      sanitizeTab(tab, { captureTitles: true, urlDetailPolicy: "origin-path" }).title,
+      "Sensitive page title",
+    );
+  });
 });
 
 describe("browser observation v1 contract", () => {

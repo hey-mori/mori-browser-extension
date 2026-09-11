@@ -6,7 +6,9 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "validate": "node scripts/validate-extension.mjs",
+    "package:chrome": "node scripts/package-chrome.mjs",
+    "inspect:chrome-package": "node scripts/inspect-chrome-package.mjs",
     "smoke:chrome-native": "node scripts/chrome-native-smoke.mjs",
-    "check": "npm test && npm run validate"
+    "check": "npm test && npm run validate && npm run package:chrome && npm run inspect:chrome-package"
   }
 }

@@ -22,6 +22,8 @@ describe("chrome native smoke support", () => {
     const options = parseSmokeArgs([
       "--chrome-path",
       "C:/Chrome/chrome.exe",
+      "--extension-root",
+      "C:/dev/mori-browser-extension/dist/chrome/mori-browser-extension-0.1.0",
       "--mori-worktree",
       "C:/dev/mori-browser-native-host-dev",
       "--native-host-path",
@@ -34,6 +36,10 @@ describe("chrome native smoke support", () => {
     ]);
 
     assert.equal(options.chromePath, "C:/Chrome/chrome.exe");
+    assert.equal(
+      options.extensionRoot,
+      "C:/dev/mori-browser-extension/dist/chrome/mori-browser-extension-0.1.0",
+    );
     assert.equal(options.moriWorktree, "C:/dev/mori-browser-native-host-dev");
     assert.equal(
       options.nativeHostPath,
