@@ -27,6 +27,10 @@ describe("chrome native smoke support", () => {
       "--native-host-path",
       "C:/dev/mori-browser-native-host-dev/src-tauri/target/debug/mori-browser-native-host.exe",
       "--keep-profile",
+      "--registration-mode",
+      "existing",
+      "--expected-manifest-path",
+      "C:/Users/Isaac/AppData/Local/Mori/NativeMessagingHosts/com.swarea.mori.browser.json",
     ]);
 
     assert.equal(options.chromePath, "C:/Chrome/chrome.exe");
@@ -36,6 +40,15 @@ describe("chrome native smoke support", () => {
       "C:/dev/mori-browser-native-host-dev/src-tauri/target/debug/mori-browser-native-host.exe",
     );
     assert.equal(options.keepProfile, true);
+    assert.equal(options.registrationMode, "existing");
+    assert.equal(
+      options.expectedManifestPath,
+      "C:/Users/Isaac/AppData/Local/Mori/NativeMessagingHosts/com.swarea.mori.browser.json",
+    );
+  });
+
+  it("rejects unknown native host registration modes", () => {
+    assert.throws(() => parseSmokeArgs(["--registration-mode", "magic"]), /temporary or existing/);
   });
 
   it("derives local Mori and native host paths from the extension checkout", () => {

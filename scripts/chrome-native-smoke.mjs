@@ -54,6 +54,7 @@ async function main() {
     log(`Extension root: ${paths.extensionRoot}`);
     log(`Mori worktree: ${paths.moriWorktree}`);
     log(`Native host: ${paths.nativeHostPath}`);
+    log(`Native host registration mode: ${options.registrationMode}`);
 
     await runHappyPath({ options, paths, registry, result });
 
@@ -88,10 +89,12 @@ async function runHappyPath({ options, paths, registry, result }) {
     result.extensionId = extensionId;
     log(`Loaded unpacked extension id: ${extensionId}`);
 
-    await registry.withInstalledHost(
+    await registry.withHostRegistration(
       {
         extensionId,
         manifestPath: nativeHostManifestPath(chrome.profileDir),
+        expectedManifestPath: options.expectedManifestPath,
+        registrationMode: options.registrationMode,
         paths,
       },
       async () => {
@@ -172,10 +175,12 @@ async function runMoriUnavailablePath({ options, paths, registry, result }) {
     },
     async (chrome) => {
       const extensionId = await loadExtension(chrome.cdp, paths.extensionRoot);
-      await registry.withInstalledHost(
+      await registry.withHostRegistration(
         {
           extensionId,
           manifestPath: nativeHostManifestPath(chrome.profileDir),
+          expectedManifestPath: options.expectedManifestPath,
+          registrationMode: options.registrationMode,
           paths,
         },
         async () => {
@@ -498,7 +503,18 @@ class NativeHostRegistry {
     this.registryPath = chromeNativeHostRegistryPath(browser);
   }
 
-  async withInstalledHost({ extensionId, manifestPath, paths }, fn) {
+  async withHostRegistration(
+    { extensionId, manifestPath, expectedManifestPath, registrationMode, paths },
+    fn,
+  ) {
+    if (registrationMode === "existing") {
+      this.verifyExisting({ extensionId, expectedManifestPath, paths });
+      return await fn();
+    }
+    return await this.withTemporaryHost({ extensionId, manifestPath, paths }, fn);
+  }
+
+  async withTemporaryHost({ extensionId, manifestPath, paths }, fn) {
     const previous = this.read();
     try {
       this.install({ extensionId, manifestPath, paths });
@@ -507,6 +523,21 @@ class NativeHostRegistry {
     } finally {
       this.restore(previous);
     }
+  }
+
+  verifyExisting({ extensionId, expectedManifestPath, paths }) {
+    const current = this.read();
+    if (!current.exists) {
+      throw new Error(`Native host registry is not present: ${this.registryPath}`);
+    }
+    if (
+      expectedManifestPath &&
+      path.resolve(current.value) !== path.resolve(expectedManifestPath)
+    ) {
+      throw new Error(`Native host registry read-back mismatch: ${current.value}`);
+    }
+    const manifestPath = current.value;
+    this.verify({ extensionId, manifestPath, paths });
   }
 
   async withoutRegisteredHost(fn) {
