@@ -38,7 +38,10 @@ async function main() {
     return;
   }
 
-  const paths = resolveSmokePaths({ extensionRoot, ...options });
+  const paths = resolveSmokePaths({
+    ...options,
+    extensionRoot: options.extensionRoot || extensionRoot,
+  });
   validatePrerequisites(paths);
 
   const result = createSmokeResult();

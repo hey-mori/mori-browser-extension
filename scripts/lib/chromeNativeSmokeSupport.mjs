@@ -24,6 +24,7 @@ const DEFAULT_CHROME_CANDIDATES = [
 export function parseSmokeArgs(argv, env = process.env) {
   const options = {
     chromePath: env.CHROME_PATH || "",
+    extensionRoot: env.MORI_BROWSER_EXTENSION_ROOT || "",
     moriWorktree: env.MORI_WORKTREE || "",
     nativeHostPath: env.MORI_BROWSER_NATIVE_HOST_PATH || "",
     keepProfile: env.MORI_BROWSER_SMOKE_KEEP_PROFILE === "1",
@@ -37,6 +38,8 @@ export function parseSmokeArgs(argv, env = process.env) {
     const arg = argv[index];
     if (arg === "--chrome-path") {
       options.chromePath = readArgValue(argv, ++index, arg);
+    } else if (arg === "--extension-root") {
+      options.extensionRoot = readArgValue(argv, ++index, arg);
     } else if (arg === "--mori-worktree") {
       options.moriWorktree = readArgValue(argv, ++index, arg);
     } else if (arg === "--native-host-path") {
@@ -71,6 +74,7 @@ export function usage() {
     "",
     "Options:",
     "  --chrome-path <path>        Chrome executable path.",
+    "  --extension-root <path>      Unpacked extension directory to load.",
     "  --mori-worktree <path>      Mori worktree that owns connectors/browser-native.",
     "  --native-host-path <path>   mori-browser-native-host executable path.",
     "  --keep-profile             Keep temporary Chrome profiles for debugging.",
@@ -94,7 +98,8 @@ export function defaultNativeHostPath(moriWorktree) {
 }
 
 export function resolveSmokePaths({ extensionRoot, chromePath, moriWorktree, nativeHostPath }) {
-  const resolvedMoriWorktree = path.resolve(moriWorktree || defaultMoriWorktree(extensionRoot));
+  const resolvedExtensionRoot = path.resolve(extensionRoot);
+  const resolvedMoriWorktree = path.resolve(moriWorktree || defaultMoriWorktree(resolvedExtensionRoot));
   const resolvedNativeHostPath = path.resolve(
     nativeHostPath || defaultNativeHostPath(resolvedMoriWorktree),
   );
@@ -102,7 +107,7 @@ export function resolveSmokePaths({ extensionRoot, chromePath, moriWorktree, nat
 
   return {
     chromePath: resolvedChromePath,
-    extensionRoot: path.resolve(extensionRoot),
+    extensionRoot: resolvedExtensionRoot,
     moriWorktree: resolvedMoriWorktree,
     nativeHostPath: resolvedNativeHostPath,
   };

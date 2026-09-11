@@ -35,7 +35,8 @@ h2 {
 
 header p,
 li,
-.debug p {
+.debug p,
+.disclosure p {
   color: #53606f;
   font-size: 12px;
 }
@@ -75,6 +76,17 @@ ul {
   border-top: 1px solid #d6dee8;
 }
 
+.disclosure {
+  padding: 10px 12px;
+  border: 1px solid #d6dee8;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.disclosure p {
+  line-height: 1.45;
+}
+
 button {
   min-height: 32px;
   border: 1px solid #b9c6d5;
@@ -92,6 +104,7 @@ button {
   }
 
   .toggle,
+  .disclosure,
   button {
     border-color: #3c4654;
     background: #1e2630;
@@ -99,7 +112,8 @@ button {
 
   header p,
   li,
-  .debug p {
+  .debug p,
+  .disclosure p {
     color: #aeb8c5;
   }
 

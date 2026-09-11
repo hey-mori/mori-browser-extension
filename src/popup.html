@@ -10,7 +10,7 @@
     <main>
       <header>
         <h1>Mori Browser Extension</h1>
-        <p>Explicit browser activity capture companion.</p>
+        <p>Opt-in browser activity capture companion for Mori.</p>
       </header>
 
       <label class="toggle">
@@ -23,7 +23,7 @@
         <ul>
           <li>Active tab changes</li>
           <li>Committed navigations</li>
-          <li>Current window and tab metadata</li>
+          <li>Current normal window and tab metadata</li>
         </ul>
       </section>
 
@@ -35,6 +35,16 @@
           <li>Cookies or account state</li>
           <li>Browser history import</li>
         </ul>
+      </section>
+
+      <section class="disclosure">
+        <h2>Disclosure</h2>
+        <p>
+          When capture is on, Mori receives sanitized browser activity on this
+          computer. URLs keep origin and path only; query strings, fragments,
+          credentials, page contents, form input, cookies, and incognito tabs
+          are not sent.
+        </p>
       </section>
 
       <section class="debug">

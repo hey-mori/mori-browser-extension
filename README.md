@@ -109,10 +109,26 @@ Run the local checks:
 ```bash
 npm test
 npm run validate
+npm run package:chrome
+npm run inspect:chrome-package
+npm run check
 npm run smoke:chrome-native
 ```
 
-There is no build step yet. The current source is a plain Manifest V3 extension.
+The current source is a plain Manifest V3 extension. The Chrome Web Store
+package step stages the runtime allowlist and writes a deterministic ZIP under
+`dist/chrome`.
+
+Chrome Web Store readiness materials live in:
+
+- `docs/chrome-web-store-readiness.md`
+- `store/listing.md`
+- `store/privacy-policy.md`
+- `store/privacy-practices.md`
+- `store/assets`
+
+These files prepare an owner handoff only. They do not imply that a Store item
+has been created, uploaded, submitted, or published.
 
 ## Native Messaging Development
 
@@ -147,6 +163,13 @@ The canonical development smoke is:
 
 ```powershell
 npm run smoke:chrome-native -- --mori-worktree "C:\dev\mori-browser-native-host-dev"
+```
+
+To smoke the staged Chrome Web Store runtime instead of the repository root:
+
+```powershell
+npm run package:chrome
+npm run smoke:chrome-native -- --extension-root "<extension-repo>\dist\chrome\mori-browser-extension-0.1.0" --mori-worktree "C:\dev\mori-browser-native-host-dev"
 ```
 
 Prerequisites:

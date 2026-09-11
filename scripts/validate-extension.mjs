@@ -17,7 +17,16 @@ const forbiddenPermissions = [
 ];
 
 assert.equal(manifest.manifest_version, 3);
+assert.equal(manifest.name, "Mori Browser Extension");
+assert.equal(manifest.description, "Opt-in browser activity capture companion for Mori.");
 assert.deepEqual(manifest.permissions, ["storage", "tabs", "webNavigation", "nativeMessaging"]);
+assert.deepEqual(manifest.icons, {
+  "16": "icons/icon-16.png",
+  "32": "icons/icon-32.png",
+  "48": "icons/icon-48.png",
+  "128": "icons/icon-128.png",
+});
+assert.deepEqual(manifest.action.default_icon, manifest.icons);
 assert.equal(manifest.host_permissions, undefined);
 assert.equal(manifest.content_scripts, undefined);
 assert.equal(manifest.incognito, "not_allowed");
@@ -28,6 +37,10 @@ assert.deepEqual(
 assert.equal(JSON.stringify(manifest).includes("<all_urls>"), false);
 
 for (const path of [
+  "icons/icon-16.png",
+  "icons/icon-32.png",
+  "icons/icon-48.png",
+  "icons/icon-128.png",
   "src/background.js",
   "src/backgroundController.js",
   "src/core/moriBrowserExtensionCore.js",
@@ -35,9 +48,12 @@ for (const path of [
   "src/popup.js",
   "src/transport/nativeMessagingClient.js",
   "scripts/chrome-native-smoke.mjs",
+  "scripts/inspect-chrome-package.mjs",
+  "scripts/package-chrome.mjs",
+  "scripts/lib/chromePackage.mjs",
   "scripts/lib/chromeNativeSmokeSupport.mjs",
 ]) {
-  readFileSync(join(root, path), "utf8");
+  readFileSync(join(root, path));
 }
 
 console.log("extension validation: ok");
