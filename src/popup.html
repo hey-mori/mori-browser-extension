@@ -3,57 +3,29 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mori Browser Extension</title>
+    <title>Mori Browser</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <main>
-      <header>
-        <h1>Mori Browser Extension</h1>
-        <p>Opt-in browser activity capture companion for Mori.</p>
-      </header>
-
-      <label class="toggle">
-        <input id="capture-toggle" type="checkbox" />
-        <span>Browser activity capture</span>
-      </label>
-
-      <section>
-        <h2>Collected</h2>
-        <ul>
-          <li>Active tab changes</li>
-          <li>Committed navigations</li>
-          <li>Current normal window and tab metadata</li>
-        </ul>
+      <header><img src="../icons/icon-32.png" width="32" height="32" alt="" /><h1>Mori Browser</h1></header>
+      <label class="toggle"><span>Browser capture</span><input id="capture-toggle" type="checkbox" /></label>
+      <section aria-label="Mori connection" role="status" aria-live="polite">
+        <h2 id="transport-status">Capture off</h2>
+        <p id="transport-detail"></p>
       </section>
-
-      <section>
-        <h2>Not collected</h2>
-        <ul>
-          <li>Page contents or DOM</li>
-          <li>Passwords or form input</li>
-          <li>Cookies or account state</li>
-          <li>Browser history import</li>
-        </ul>
+      <section class="disclosure" aria-label="Privacy">
+        <h2>On this computer</h2>
+        <p>When capture is on, Mori receives tab changes, page navigations, and current windows and tabs.</p>
+        <p>URLs: origin + path only<br />Page contents: never captured</p>
+        <p>No query strings, fragments, credentials, titles, form input, cookies, or incognito tabs. No browser history import.</p>
       </section>
-
-      <section class="disclosure">
-        <h2>Disclosure</h2>
-        <p>
-          When capture is on, Mori receives sanitized browser activity on this
-          computer. URLs keep origin and path only; query strings, fragments,
-          credentials, page contents, form input, cookies, and incognito tabs
-          are not sent.
-        </p>
-      </section>
-
-      <section class="debug">
-        <h2>Debug</h2>
+      <details class="debug">
+        <summary>Diagnostics</summary>
         <p id="snapshot-status">Snapshot: none</p>
         <p id="event-status">Events: 0</p>
-        <p id="transport-status">Mori: disconnected</p>
-        <button id="bootstrap-button" type="button">Refresh Snapshot</button>
-      </section>
+        <button id="bootstrap-button" type="button" disabled>Refresh browser state</button>
+      </details>
     </main>
     <script src="popup.js" type="module"></script>
   </body>

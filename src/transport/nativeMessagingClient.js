@@ -1,5 +1,6 @@
 export const MORI_BROWSER_NATIVE_HOST_NAME = "com.swarea.mori.browser";
 export const TRANSPORT_STATE_KEY = "mori.browserTrace.nativeMessaging";
+export const MAX_PENDING_OBSERVATIONS = 32;
 
 const DEFAULT_ERROR = Object.freeze({
   code: "not_connected",
@@ -11,6 +12,7 @@ export function createNativeMessagingClient({
   hostName = MORI_BROWSER_NATIVE_HOST_NAME,
   now = () => new Date().toISOString(),
   onStatusChange = () => undefined,
+  acknowledgementTimeoutMs = 10_000,
 } = {}) {
   let port = null;
   let pending = [];
@@ -38,8 +40,9 @@ export function createNativeMessagingClient({
     try {
       port = runtimeApi.runtime.connectNative(hostName);
       intentionalDisconnect = false;
-      port.onMessage.addListener(handleMessage);
-      port.onDisconnect.addListener(handleDisconnect);
+      const connectedPort = port;
+      port.onMessage.addListener((message) => { if (port === connectedPort) handleMessage(message); });
+      port.onDisconnect.addListener(() => { if (port === connectedPort) handleDisconnect(); });
       setStatus({ state: "connected", lastError: null });
       return port;
     } catch (error) {
@@ -71,6 +74,11 @@ export function createNativeMessagingClient({
   }
 
   async function sendObservation(observation) {
+    if (pending.length >= MAX_PENDING_OBSERVATIONS) {
+      const acknowledgement = { ok: false, code: "backpressure", message: "Mori delivery is busy." };
+      setStatus({ state: "error", lastError: acknowledgement, lastAcknowledgement: acknowledgement });
+      return { ok: false, acknowledgement };
+    }
     const activePort = connect();
     if (!activePort) {
       const acknowledgement = {
@@ -82,12 +90,20 @@ export function createNativeMessagingClient({
     }
 
     return new Promise((resolve) => {
-      pending.push(resolve);
+      const finish = (result) => { clearTimeout(timer); resolve(result); };
+      const timer = setTimeout(() => {
+        // FIFO has no wire request id. Drop the port so late ACKs cannot match a new send.
+        const acknowledgement = { ok: false, code: "mori_timeout", message: "Mori did not respond in time." };
+        rejectPending(acknowledgement);
+        disconnect();
+        setStatus({ state: "error", lastError: acknowledgement, lastAcknowledgement: acknowledgement });
+      }, acknowledgementTimeoutMs);
+      pending.push(finish);
       setStatus({ pending: pending.length });
       try {
         activePort.postMessage(observation);
       } catch (error) {
-        removePending(resolve);
+        removePending(finish);
         const acknowledgement = {
           ok: false,
           code: "post_message_failed",
@@ -98,7 +114,7 @@ export function createNativeMessagingClient({
           lastError: { code: acknowledgement.code, message: acknowledgement.message },
           lastAcknowledgement: acknowledgement,
         });
-        resolve({ ok: false, acknowledgement });
+        finish({ ok: false, acknowledgement });
       }
     });
   }

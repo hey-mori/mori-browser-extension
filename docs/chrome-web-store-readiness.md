@@ -102,6 +102,8 @@ Prepared assets:
 The icon assets are derived from Mori's generated app icon in `swarea/mori`.
 The screenshot is a Chrome-rendered capture of the extension popup default
 state with no private browser data.
+It was refreshed on 2026-09-13 for the daily-use popup: capture off, connection
+status visible, and diagnostics collapsed. Store publication remains deferred.
 
 ## Privacy Policy Hosting
 

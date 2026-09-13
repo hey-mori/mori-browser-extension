@@ -245,6 +245,8 @@ async function withChrome(chromePath, options, fn) {
 }
 
 async function launchChrome({ chromePath, profileDir, env }) {
+  // A restarted test profile still holds the previous process's endpoint.
+  rmSync(path.join(profileDir, "DevToolsActivePort"), { force: true });
   const child = spawn(
     chromePath,
     [
@@ -301,14 +303,8 @@ async function launchChrome({ chromePath, profileDir, env }) {
     async close() {
       await cdp.send("Browser.close").catch(() => undefined);
       cdp.close();
-      terminateChromeProcess(child);
       await waitForProcessExit(child, 3000).catch(() => {
-        if (process.platform === "win32" && child.pid) {
-          spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
-            stdio: "ignore",
-            windowsHide: true,
-          });
-        }
+        terminateChromeProcess(child);
       });
       if (stderr.includes("--load-extension is not allowed")) {
         log("Chrome reported CLI extension flags are blocked; CDP loader was used instead.");
@@ -754,4 +750,7 @@ function log(message) {
   console.error(`[mori-browser-smoke] ${message}`);
 }
 
-await main();
+export { launchChrome, CdpConnection, NativeHostRegistry, loadExtension, openExtensionPopup,
+  setCaptureFromPopup, triggerNavigation, triggerTabActivation, evaluate, waitFor, readExtensionStorage };
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

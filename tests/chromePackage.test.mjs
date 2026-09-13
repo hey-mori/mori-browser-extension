@@ -28,6 +28,7 @@ describe("Chrome Web Store package", () => {
       "src/popup.css",
       "src/popup.html",
       "src/popup.js",
+      "src/popupState.js",
       "src/transport/nativeMessagingClient.js",
     ]);
   });

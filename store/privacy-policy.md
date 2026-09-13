@@ -1,6 +1,6 @@
 # Mori Browser Extension Privacy Policy
 
-Last updated: 2026-09-11
+Last updated: 2026-09-13
 
 Mori Browser Extension is an opt-in local companion for Mori Desktop. It helps
 Mori understand browser activity by sending sanitized browser observations to
@@ -32,9 +32,11 @@ The extension does not collect:
 ## How Data Is Used
 
 Browser observations are used only to provide Mori's browser context and browser
-trace features. Mori Desktop receives the observations locally and decides how
-to store, interpret, or discard them according to Mori's own local-first memory
-model.
+trace features. Mori Desktop keeps the last browser snapshot in memory and
+stores sanitized tab changes and committed navigations in its local database.
+These records survive Desktop restarts. This version does not infer tasks or
+form semantic memories from those records, and does not automatically expire
+them. Mori's explicit data reset removes them with other local data.
 
 ## Data Transfer
 
@@ -48,6 +50,10 @@ third-party advertising platforms.
 Browser activity capture is off by default. You can turn capture on or off in
 the extension popup. When capture is off, the extension does not send browser
 observations to Mori and closes the Native Messaging connection.
+
+Turning capture off clears the extension's temporary diagnostic observations,
+but does not delete evidence already delivered to Mori. An observation already
+sent before capture was turned off can still finish being stored.
 
 Chrome incognito mode is not allowed by the extension manifest, and incognito
 tabs or windows are also ignored defensively.
