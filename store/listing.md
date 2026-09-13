@@ -63,7 +63,7 @@ Owner to fill with the preferred Mori or SWAREA homepage URL before submission.
 3. Open the extension popup and confirm browser capture is off by default.
 4. Turn browser capture on.
 5. Open a normal non-incognito tab and navigate to `https://example.com/a?token=123#secret`.
-6. Confirm the popup reports Mori transport status.
+6. Confirm the popup reports recent delivery to Mori; diagnostics are optional.
 7. Confirm observations sent to Mori contain `https://example.com/a` and do not
    contain `token=123` or `#secret`.
 8. Turn browser capture off.
@@ -71,3 +71,9 @@ Owner to fill with the preferred Mori or SWAREA homepage URL before submission.
 
 If Mori Desktop is not running, the expected behavior is that the popup reports
 Mori unavailable rather than sending data elsewhere.
+
+## Screenshot
+
+`assets/screenshots/popup-default-1280x800.png` shows capture off, the local
+privacy disclosure, and collapsed diagnostics. It is a rendered product view,
+not evidence of Store registration or publication.

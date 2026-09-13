@@ -7,6 +7,53 @@ import {
 import { createMoriBrowserBackground } from "../src/backgroundController.js";
 
 describe("background controller native transport", () => {
+  it("does not read or save a diagnostic snapshot with capture off", async () => {
+    let reads = 0;
+    const runtimeApi = createFakeRuntimeApi({ getAllWindows: async () => { reads++; return []; } });
+    const controller = createMoriBrowserBackground({ runtimeApi, nativeTransport: createFakeTransport(), debugLog: noop });
+    assert.equal((await controller.handleMessage({ type: "mori.browser.bootstrap_context" })).ok, false);
+    assert.equal(reads, 0);
+    assert.equal(runtimeApi.storage.session.data[LAST_SNAPSHOT_KEY], undefined);
+  });
+
+  it("refreshes missing Mori context once after the next successful activity", async () => {
+    const transport = createFakeTransport({ sendResult: { ok: true, acknowledgement: { ok: true, contextRequired: true } } });
+    const runtimeApi = createFakeRuntimeApi();
+    const controller = createMoriBrowserBackground({ runtimeApi, nativeTransport: transport, debugLog: noop });
+    await controller.setCaptureEnabled(true);
+    await controller.handleTabActivated({ tabId: 21, windowId: 3 });
+    assert.deepEqual(transport.sent.map((e) => e.kind), ["context_snapshot", "tab_activated", "context_snapshot"]);
+    const restarted = createMoriBrowserBackground({ runtimeApi, nativeTransport: transport, debugLog: noop });
+    await restarted.handleStartup();
+    assert.equal(transport.sent.at(-1).kind, "context_snapshot");
+    assert.equal((await restarted.readDebugState()).captureEnabled, true);
+  });
+
+  it("drops late window and bootstrap lookups through repeated consent changes", async () => {
+    for (const pendingKind of ["window", "bootstrap", "navigation"]) {
+      const gate = createDeferred();
+      const entered = createDeferred();
+      let delay = false;
+      const blocked = () => { entered.resolve(); return gate.promise; };
+      const runtimeApi = createFakeRuntimeApi({
+        getWindow: async () => delay && pendingKind !== "bootstrap" ? blocked() : { id: 3 },
+        getAllWindows: async () => delay && pendingKind === "bootstrap" ? blocked() : [],
+      });
+      const transport = createFakeTransport();
+      const controller = createMoriBrowserBackground({ runtimeApi, nativeTransport: transport, debugLog: noop });
+      await controller.setCaptureEnabled(true);
+      delay = true;
+      const pending = pendingKind === "bootstrap" ? controller.handleMessage({ type: "mori.browser.bootstrap_context" })
+        : pendingKind === "navigation" ? controller.handleNavigationCommitted({ tabId: 21, frameId: 0, url: "https://example.com/late" })
+        : controller.handleTabActivated({ tabId: 21, windowId: 3 });
+      await entered.promise;
+      await controller.setCaptureEnabled(false);
+      gate.resolve(pendingKind === "bootstrap" ? [] : { id: 3 });
+      await pending;
+      assert.equal(transport.sent.length, 1);
+      assert.deepEqual(runtimeApi.storage.session.data[RECENT_EVENTS_KEY], []);
+    }
+  });
   it("keeps capture off from sending observations", async () => {
     const nativeTransport = createFakeTransport();
     const controller = createMoriBrowserBackground({
@@ -84,8 +131,10 @@ describe("background controller native transport", () => {
   it("drops observations whose async lookup finishes after capture is disabled", async () => {
     const nativeTransport = createFakeTransport();
     const delayedTab = createDeferred();
+    const entered = createDeferred();
     const runtimeApi = createFakeRuntimeApi({
       async getTab() {
+        entered.resolve();
         return delayedTab.promise;
       },
     });
@@ -93,6 +142,7 @@ describe("background controller native transport", () => {
 
     await controller.setCaptureEnabled(true);
     const activation = controller.handleTabActivated({ tabId: 21, windowId: 3 });
+    await entered.promise;
     await controller.setCaptureEnabled(false);
     delayedTab.resolve(runtimeApi.fixtures.tab);
     await activation;

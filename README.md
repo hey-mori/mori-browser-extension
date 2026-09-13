@@ -154,8 +154,11 @@ actual extension id from `chrome://extensions`:
 .\connectors\browser-native\install-native-host.ps1 -Browser chrome -HostPath "C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe" -ExtensionId "<actual unpacked extension id>"
 ```
 
-The popup debug section reports a compact Mori transport state such as
-`connected`, `mori_unavailable`, or `disconnected`.
+The popup shows capture off, confirmed recent delivery, Mori not running, or
+an installation/delivery problem. Diagnostics are folded away. Opening the
+popup does not start capture; manual snapshot refresh requires capture on.
+Mori Desktop keeps a last-observed current snapshot in memory and persists
+sanitized activation/navigation evidence in its existing local database.
 
 ## Chrome Native Smoke
 
@@ -221,7 +224,8 @@ failure semantics can be tested without stopping the developer's running Mori.
 5. Navigate that tab to a URL with query and fragment, for example
    `https://example.com/a?token=123#secret`.
 6. Confirm the popup reports the Mori transport state.
-7. Confirm the service worker console logs sanitized events and acknowledgements.
+7. Confirm Mori's Connections settings show recent receipt. Console diagnostics
+   contain only source/kind; payloads and URLs are not logged.
 8. Turn capture off.
 9. Switch or navigate tabs again and confirm event count no longer increases
    and no new observations are sent.
@@ -238,3 +242,14 @@ opened lazily when capture is on, closed when capture is turned off, and
 recreated on the next observation if the Manifest V3 service worker restarts or
 the native host disconnects. There is no offline queue, retry loop, heartbeat,
 local HTTP server, WebSocket server, or file-per-event spool.
+
+With a compatible Mori live-source build, a successful trace acknowledgement
+may request a fresh context snapshot through the additive `contextRequired`
+hint. The next snapshot refresh is coalesced and guarded by capture consent.
+This restores Mori's memory-only context after restart without a heartbeat.
+Outstanding sends are bounded at 32; a stalled helper times out after 10 seconds
+and reconnects on the next observation. Events sent while Mori is unavailable
+are not queued for replay.
+
+Chrome Web Store work is intentionally deferred for the live-source milestone.
+Existing packaging, icons, listing and privacy assets remain prepared locally.

@@ -35,7 +35,7 @@ export function sanitizeBrowserUrl(rawUrl, policy = DEFAULT_CAPTURE_OPTIONS.urlD
 
   try {
     const parsed = new URL(trimmed);
-    const internal = INTERNAL_SCHEMES.has(parsed.protocol);
+    const internal = INTERNAL_SCHEMES.has(parsed.protocol) || !["http:", "https:"].includes(parsed.protocol);
     parsed.username = "";
     parsed.password = "";
 

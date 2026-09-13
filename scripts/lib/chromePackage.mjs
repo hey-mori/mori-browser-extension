@@ -14,6 +14,7 @@ export const CHROME_PACKAGE_FILES = Object.freeze([
   "src/popup.css",
   "src/popup.html",
   "src/popup.js",
+  "src/popupState.js",
   "src/transport/nativeMessagingClient.js",
 ]);
 

@@ -3,9 +3,35 @@ import { describe, it } from "node:test";
 import {
   MORI_BROWSER_NATIVE_HOST_NAME,
   createNativeMessagingClient,
+  MAX_PENDING_OBSERVATIONS,
 } from "../src/transport/nativeMessagingClient.js";
 
 describe("native messaging client", () => {
+  it("bounds pending work and releases every wait on a stalled helper", async () => {
+    const port = createFakePort();
+    const client = createNativeMessagingClient({ runtimeApi: createRuntimeApi(port), acknowledgementTimeoutMs: 15 });
+    const sends = Array.from({ length: MAX_PENDING_OBSERVATIONS }, (_, id) => client.sendObservation({ id }));
+    assert.equal((await client.sendObservation({ id: 33 })).acknowledgement.code, "backpressure");
+    const outcomes = await Promise.all(sends);
+    assert.ok(outcomes.every((result) => result.acknowledgement.code === "mori_timeout"));
+    assert.equal(client.getStatus().pending, 0);
+    assert.equal(port.disconnected, true);
+  });
+
+  it("ignores callbacks from an old port after reconnect", async () => {
+    const first = createFakePort();
+    const second = createFakePort();
+    const client = createNativeMessagingClient({ runtimeApi: createRuntimeApi(first, second) });
+    const oldSend = client.sendObservation({ id: 1 });
+    client.disconnect();
+    await oldSend;
+    const next = client.sendObservation({ id: 2 });
+    first.emitMessage({ ok: true });
+    first.emitDisconnect();
+    assert.equal(client.getStatus().pending, 1);
+    second.emitMessage({ ok: true, kind: "tab_activated", contextRequired: true });
+    assert.equal((await next).acknowledgement.contextRequired, true);
+  });
   it("connects to the Mori native host and resolves accepted acknowledgements", async () => {
     const port = createFakePort();
     const runtimeApi = createRuntimeApi(port);

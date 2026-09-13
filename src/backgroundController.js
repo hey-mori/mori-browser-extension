@@ -20,6 +20,7 @@ export function createMoriBrowserBackground({
   debugLog = console.debug,
 } = {}) {
   let captureGeneration = 0;
+  let contextRefresh = null;
 
   async function initialize() {
     const state = await readCaptureState();
@@ -38,8 +39,9 @@ export function createMoriBrowserBackground({
   }
 
   async function handleTabActivated(activeInfo) {
-    if (!(await isCaptureEnabled())) return;
+    const occurredAt = new Date().toISOString();
     const generation = captureGeneration;
+    if (!(await isCaptureEnabled())) return;
     const tab = await safeGetTab(activeInfo.tabId);
     const window = await safeGetWindow(activeInfo.windowId);
     const envelope = buildTabActivatedEnvelope({
@@ -47,13 +49,14 @@ export function createMoriBrowserBackground({
       activeInfo,
       tab,
       window,
+      occurredAt,
     });
     if (envelope) await recordObservation(envelope, generation);
   }
 
   async function handleNavigationCommitted(details) {
-    if (!(await isCaptureEnabled())) return;
     const generation = captureGeneration;
+    if (!(await isCaptureEnabled())) return;
     const tab = await safeGetTab(details.tabId);
     const window = tab?.windowId !== undefined ? await safeGetWindow(tab.windowId) : undefined;
     const envelope = buildNavigationCommittedEnvelope({
@@ -74,6 +77,7 @@ export function createMoriBrowserBackground({
         return { ok: true, state: await readDebugState() };
       case "mori.browser.bootstrap_context":
         const transmit = await isCaptureEnabled();
+        if (!transmit) return { ok: false, error: "Capture is off." };
         return {
           ok: true,
           snapshot: await bootstrapContext("manual", {
@@ -106,6 +110,7 @@ export function createMoriBrowserBackground({
   }
 
   async function bootstrapContext(reason, { transmit, generation } = { transmit: false }) {
+    if (!transmit || !(await isCurrentCaptureGeneration(generation))) return null;
     const windows = await runtimeApi.windows.getAll({ populate: true, windowTypes: ["normal"] });
     const observedAt = new Date().toISOString();
     const snapshot = buildContextBootstrapEnvelope({
@@ -113,7 +118,7 @@ export function createMoriBrowserBackground({
       windows,
       observedAt,
     });
-    if (transmit && !(await isCurrentCaptureGeneration(generation))) return snapshot;
+    if (!(await isCurrentCaptureGeneration(generation))) return null;
     await writeSessionState({
       [LAST_SNAPSHOT_KEY]: {
         ...snapshot,
@@ -168,7 +173,7 @@ export function createMoriBrowserBackground({
       [RECENT_EVENTS_KEY]: appendRecentEvent(values[RECENT_EVENTS_KEY], event),
     });
     await transmitObservation(event, generation);
-    debugLog("[Mori Browser Extension]", event.source, event.kind, event);
+    debugLog("[Mori Browser Extension]", event.source, event.kind);
   }
 
   async function transmitObservation(envelope, generation) {
@@ -176,6 +181,11 @@ export function createMoriBrowserBackground({
     const result = await nativeTransport.sendObservation(envelope);
     if (!(await isCurrentCaptureGeneration(generation))) return result;
     await writeTransportStatus();
+    if (result.acknowledgement?.ok === true && result.acknowledgement.contextRequired === true
+        && envelope.kind !== "context_snapshot" && !contextRefresh) {
+      contextRefresh = bootstrapContext("recovery", { transmit: true, generation });
+      try { await contextRefresh; } finally { contextRefresh = null; }
+    }
     return result;
   }
 
@@ -185,7 +195,8 @@ export function createMoriBrowserBackground({
   }
 
   async function isCurrentCaptureGeneration(generation) {
-    return generation === captureGeneration && (await isCaptureEnabled());
+    const enabled = await isCaptureEnabled();
+    return enabled && generation === captureGeneration;
   }
 
   async function safeGetTab(tabId) {
