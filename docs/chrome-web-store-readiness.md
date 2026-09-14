@@ -26,7 +26,7 @@ tool, analytics product, sync service, or standalone memory product.
 |---|---|
 | `storage` | Stores explicit capture opt-in in `chrome.storage.local` and temporary debug state in `chrome.storage.session`. |
 | `tabs` | Reads the current active tab and normal window snapshot after explicit opt-in. Chrome requires `tabs` or host permissions for tab URL metadata. |
-| `webNavigation` | Observes committed main-frame navigations after explicit opt-in. |
+| `webNavigation` | Observes committed and History API main-frame navigations after explicit opt-in. |
 | `nativeMessaging` | Sends sanitized observations to the Mori native host `com.swarea.mori.browser`. |
 
 The manifest intentionally does not request host permissions, content scripts,
@@ -39,6 +39,7 @@ Collected after explicit opt-in:
 
 - active tab changes;
 - committed main-frame navigations;
+- same-document main-frame route changes made through the History API;
 - current normal window and tab metadata;
 - sanitized URL origin and path.
 

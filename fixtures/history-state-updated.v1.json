@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "source": "browser",
+  "kind": "history_state_updated",
+  "observedAt": "2026-09-14T00:03:00.000Z",
+  "payload": {
+    "runtime": {
+      "provider": "chrome",
+      "label": "Chromium",
+      "installationId": "Mori Browser Extension",
+      "version": "0.1.0",
+      "observedAt": "2026-09-14T00:03:00.000Z"
+    },
+    "details": {
+      "tabId": 21,
+      "url": "https://example.com/app/route-two",
+      "timeStamp": 1789344180000,
+      "transitionType": "link",
+      "transitionQualifiers": []
+    },
+    "tab": {
+      "id": 21,
+      "windowId": 3,
+      "active": true,
+      "url": "https://example.com/app/route-two"
+    },
+    "urlDetailPolicy": "origin-path"
+  }
+}
