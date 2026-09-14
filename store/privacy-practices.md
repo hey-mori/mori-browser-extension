@@ -11,8 +11,8 @@ this computer after explicit opt-in.
 
 The extension collects browsing activity only when browser capture is explicitly
 enabled by the user. The collected data is limited to active tab changes,
-committed main-frame navigations, current normal window/tab metadata, and
-sanitized URL origin plus path.
+committed and History API main-frame navigations, current normal window/tab
+metadata, and sanitized URL origin plus path.
 
 The extension does not collect web page contents, DOM, screenshots, passwords,
 form input, cookies, account state, site session state, imported browser
@@ -40,8 +40,8 @@ The extension does not use remotely hosted executable code.
 - `storage`: stores explicit opt-in state and temporary debug state.
 - `tabs`: reads active tab and normal window metadata needed for the
   user-facing capture feature.
-- `webNavigation`: observes committed main-frame navigations needed for the
-  user-facing capture feature.
+- `webNavigation`: observes committed and History API main-frame navigations
+  needed for the user-facing capture feature.
 - `nativeMessaging`: sends observations to Mori Desktop through
   `com.swarea.mori.browser`.
 

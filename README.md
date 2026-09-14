@@ -34,6 +34,8 @@ The extension can observe, only after explicit opt-in:
 
 - active tab changes through `chrome.tabs.onActivated`;
 - committed main-frame navigations through `chrome.webNavigation.onCommitted`;
+- same-document main-frame route changes through
+  `chrome.webNavigation.onHistoryStateUpdated`;
 - a current context snapshot through `chrome.windows.getAll({ populate: true })`.
 
 The extension stores `captureEnabled` in `chrome.storage.local` so the Manifest
@@ -60,6 +62,7 @@ Current fixtures:
 - `fixtures/context-snapshot.v1.json`
 - `fixtures/tab-activated.v1.json`
 - `fixtures/navigation-committed.v1.json`
+- `fixtures/history-state-updated.v1.json`
 
 The extension emits Browser observation messages, not Mori `TraceEvent` objects.
 Mori converts these observations into Browser Context or Browser Trace through
@@ -73,7 +76,7 @@ its own `src/lib/trace/sources/browser` source.
 after `tabs.onActivated`. Chrome only exposes tab URL, pending URL, and title
 when the extension has `tabs` or suitable host permissions.
 
-`webNavigation` is used for `onCommitted`.
+`webNavigation` is used for `onCommitted` and `onHistoryStateUpdated`.
 
 `nativeMessaging` is used to connect to the Mori native host:
 
@@ -144,35 +147,36 @@ commit a temporary unpacked id to source.
 Typical local path for the Mori helper after building the relay worktree:
 
 ```text
-C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe
+C:\dev\mori\src-tauri\target\debug\mori-browser-native-host.exe
 ```
 
 Manual registration is still possible from the Mori worktree after copying the
 actual extension id from `chrome://extensions`:
 
 ```powershell
-.\connectors\browser-native\install-native-host.ps1 -Browser chrome -HostPath "C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe" -ExtensionId "<actual unpacked extension id>"
+.\connectors\browser-native\install-native-host.ps1 -Browser chrome -HostPath "C:\dev\mori\src-tauri\target\debug\mori-browser-native-host.exe" -ExtensionId "<actual unpacked extension id>"
 ```
 
 The popup shows capture off, confirmed recent delivery, Mori not running, or
 an installation/delivery problem. Diagnostics are folded away. Opening the
 popup does not start capture; manual snapshot refresh requires capture on.
 Mori Desktop keeps a last-observed current snapshot in memory and persists
-sanitized activation/navigation evidence in its existing local database.
+sanitized activation, navigation, and same-document route evidence in its
+existing local database.
 
 ## Chrome Native Smoke
 
 The canonical development smoke is:
 
 ```powershell
-npm run smoke:chrome-native -- --mori-worktree "C:\dev\mori-browser-native-host-dev"
+npm run smoke:chrome-native -- --mori-worktree "C:\dev\mori"
 ```
 
 To smoke the staged Chrome Web Store runtime instead of the repository root:
 
 ```powershell
 npm run package:chrome
-npm run smoke:chrome-native -- --extension-root "<extension-repo>\dist\chrome\mori-browser-extension-0.1.0" --mori-worktree "C:\dev\mori-browser-native-host-dev"
+npm run smoke:chrome-native -- --extension-root "<extension-repo>\dist\chrome\mori-browser-extension-0.1.0" --mori-worktree "C:\dev\mori"
 ```
 
 Prerequisites:
@@ -180,7 +184,7 @@ Prerequisites:
 - Google Chrome is installed, or `--chrome-path` points to `chrome.exe`.
 - Mori Desktop is already running from the Mori browser relay worktree.
 - The native host helper has been built at
-  `C:\dev\mori-browser-native-host-dev\src-tauri\target\debug\mori-browser-native-host.exe`,
+  `C:\dev\mori\src-tauri\target\debug\mori-browser-native-host.exe`,
   or `--native-host-path` points to another helper executable.
 
 The smoke harness:
@@ -191,9 +195,9 @@ The smoke harness:
 4. registers `com.swarea.mori.browser` for the returned extension id by reusing
    Mori's Native Messaging installer script;
 5. toggles capture through the extension popup page;
-6. verifies `context_snapshot`, `navigation_committed`, `tab_activated`,
-   capture-off blocking, URL sanitization, `mori_unavailable`, and host-missing
-   failure handling;
+6. verifies `context_snapshot`, `navigation_committed`, `tab_activated`, and,
+   when requested, `history_state_updated`, plus capture-off blocking, URL
+   sanitization, `mori_unavailable`, and host-missing failure handling;
 7. restores the previous Chrome Native Messaging registration and removes the
    temporary Chrome profile.
 
@@ -219,15 +223,18 @@ failure semantics can be tested without stopping the developer's running Mori.
 
 1. Confirm capture is off by default.
 2. Turn capture on in the popup.
-3. Confirm Mori Desktop from `C:\dev\mori-browser-native-host-dev` is running.
+3. Confirm Mori Desktop from `C:\dev\mori` is running.
 4. Activate a normal web tab.
 5. Navigate that tab to a URL with query and fragment, for example
    `https://example.com/a?token=123#secret`.
-6. Confirm the popup reports the Mori transport state.
-7. Confirm Mori's Connections settings show recent receipt. Console diagnostics
+6. On an SPA test page, change the route with `history.pushState` and confirm
+   Mori records a distinct same-document route event with query and fragment
+   removed.
+7. Confirm the popup reports the Mori transport state.
+8. Confirm Mori's Connections settings show recent receipt. Console diagnostics
    contain only source/kind; payloads and URLs are not logged.
-8. Turn capture off.
-9. Switch or navigate tabs again and confirm event count no longer increases
+9. Turn capture off.
+10. Switch or navigate tabs again and confirm event count no longer increases
    and no new observations are sent.
 
 ## Transport

@@ -1,14 +1,23 @@
 # Browser Live Source v1
 
-Date: 2026-09-13. Companion: Mori issue
-[#122](https://github.com/swarea/mori/issues/122); extension issue
-[#8](https://github.com/swarea/mori-browser-extension/issues/8).
+Date: 2026-09-14. Companion: Mori issues
+[#122](https://github.com/swarea/mori/issues/122) and
+[#128](https://github.com/swarea/mori/issues/128); extension issues
+[#8](https://github.com/swarea/mori-browser-extension/issues/8) and
+[#10](https://github.com/swarea/mori-browser-extension/issues/10).
 
 ## Contract
 
-The three v1 observation kinds and opt-in ownership are unchanged. Mori now
-keeps Context in application memory and commits tab/navigation evidence to its
-existing SQLite database before returning a successful trace ACK.
+The v1 envelope and opt-in ownership are unchanged. The closed kind set now
+contains `context_snapshot`, `tab_activated`, `navigation_committed`, and
+`history_state_updated`. The latter records main-frame History API route
+changes as evidence distinct from a committed document navigation. Mori keeps
+Context in application memory and commits activity evidence to its existing
+SQLite database before returning a successful trace ACK.
+
+`history_state_updated` uses the same origin-plus-path privacy policy and
+capture-generation guard as other activity. It does not mutate Context, listen
+for fragment-only changes, import browser history, or infer task meaning.
 
 An optional `contextRequired: true` on a successful ACK requests one coalesced
 snapshot. It restores missing or stale Context after Mori restarts without a
@@ -30,8 +39,19 @@ Store assets and privacy wording follow this UI, but Store work is deferred.
 
 ## Verification
 
-`npm run check`: 34 tests passed, manifest validation passed, deterministic ZIP
-creation and explicit package inspection passed. No permission expansion.
+`npm run check` passed 39 tests plus manifest validation, deterministic ZIP
+creation, and package inspection. No permission expansion is required; both
+document commits and History API updates use `webNavigation`.
+
+A 2026-09-14 isolated Chrome 152 run against the companion Mori receiver passed
+all scenarios with no failure. One `pushState` and one `replaceState` each
+produced exactly one durable `history_state_updated` row. A fragment-only update
+produced none, while two query-only updates produced two rows with the same
+sanitized `/search` URL. The mixed history held 111 rows across three pages and
+survived Mori restart. The run also covered a pending History API lookup released
+after capture was turned off, 60 full navigations, MV3 restart, Chrome restart,
+and missing-host reporting. This is an isolated development E2E result, not a
+Store installation or long-duration reliability claim.
 
 The companion Mori `scripts/browser-live-smoke.mjs` imports this repository's
 Chrome test helpers and uses real Chrome with the staged package. Two full

@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import {
   appendRecentEvent,
   buildContextBootstrapEnvelope,
+  buildHistoryStateUpdatedEnvelope,
   buildNavigationCommittedEnvelope,
   buildTabActivatedEnvelope,
   defaultCaptureState,
@@ -168,6 +169,87 @@ describe("browser observation v1 contract", () => {
       tab: { id: 21, windowId: 3, active: true, title: "OCI" },
     });
     assert.deepEqual(envelope, fixture("navigation-committed.v1.json"));
+  });
+
+  it("builds sanitized main-frame History API updates as a distinct kind", () => {
+    assert.equal(
+      buildHistoryStateUpdatedEnvelope({
+        manifest,
+        details: {
+          tabId: 21,
+          frameId: 2,
+          url: "https://example.com/app/frame",
+          timeStamp: Date.parse("2026-09-14T00:03:00.000Z"),
+        },
+      }),
+      null,
+    );
+    assert.equal(
+      buildHistoryStateUpdatedEnvelope({
+        manifest,
+        details: {
+          tabId: 21,
+          frameId: 0,
+          url: "chrome://settings/?secret=1#private",
+          timeStamp: Date.parse("2026-09-14T00:03:00.000Z"),
+        },
+      }),
+      null,
+    );
+
+    const envelope = buildHistoryStateUpdatedEnvelope({
+      manifest,
+      details: {
+        tabId: 21,
+        frameId: 0,
+        url: "https://example.com/app/route-two?token=beta#hidden",
+        timeStamp: Date.parse("2026-09-14T00:03:00.000Z"),
+        transitionType: "link",
+        transitionQualifiers: [],
+      },
+      tab: { id: 21, windowId: 3, active: true, url: "https://example.com/app/route-two?token=beta#hidden" },
+    });
+    assert.deepEqual(envelope, fixture("history-state-updated.v1.json"));
+    assert.equal(envelope.kind, "history_state_updated");
+    assert.equal(envelope.payload.details.url.includes("?"), false);
+    assert.equal(envelope.payload.details.url.includes("#"), false);
+  });
+
+  it("accepts both HTTP schemes for History API updates", () => {
+    for (const url of ["http://example.com/app?query=one", "https://example.com/app?query=two"]) {
+      const envelope = buildHistoryStateUpdatedEnvelope({
+        manifest,
+        details: { tabId: 21, frameId: 0, url },
+      });
+      assert.equal(envelope.kind, "history_state_updated");
+      assert.equal(envelope.payload.details.url, url.split("?")[0]);
+    }
+  });
+
+  it("keeps only transition metadata in the Chrome allowlist", () => {
+    const envelope = buildHistoryStateUpdatedEnvelope({
+      manifest,
+      details: {
+        tabId: 21,
+        frameId: 0,
+        url: "https://example.com/app",
+        transitionType: "link",
+        transitionQualifiers: ["from_address_bar", "future_qualifier"],
+      },
+    });
+    assert.equal(envelope.payload.details.transitionType, "link");
+    assert.deepEqual(envelope.payload.details.transitionQualifiers, ["from_address_bar"]);
+
+    const unknownType = buildHistoryStateUpdatedEnvelope({
+      manifest,
+      details: {
+        tabId: 21,
+        frameId: 0,
+        url: "https://example.com/app",
+        transitionType: "future_transition",
+      },
+    });
+    assert.equal(unknownType.payload.details.transitionType, undefined);
   });
 
   it("keeps only a bounded sanitized debug event buffer", () => {

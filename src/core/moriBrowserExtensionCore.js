@@ -20,6 +20,27 @@ const INTERNAL_SCHEMES = new Set([
   "safari-extension:",
 ]);
 
+const NAVIGATION_TRANSITION_TYPES = new Set([
+  "auto_bookmark",
+  "auto_subframe",
+  "form_submit",
+  "generated",
+  "keyword",
+  "keyword_generated",
+  "link",
+  "manual_subframe",
+  "reload",
+  "start_page",
+  "typed",
+]);
+
+const NAVIGATION_TRANSITION_QUALIFIERS = new Set([
+  "client_redirect",
+  "forward_back",
+  "from_address_bar",
+  "server_redirect",
+]);
+
 export function defaultCaptureState() {
   return {
     captureEnabled: false,
@@ -168,6 +189,34 @@ export function buildNavigationCommittedEnvelope({
   window,
   options = DEFAULT_CAPTURE_OPTIONS,
 }) {
+  return buildNavigationEnvelope({
+    kind: "navigation_committed",
+    manifest,
+    details,
+    tab,
+    window,
+    options,
+  });
+}
+
+export function buildHistoryStateUpdatedEnvelope({
+  manifest,
+  details,
+  tab,
+  window,
+  options = DEFAULT_CAPTURE_OPTIONS,
+}) {
+  return buildNavigationEnvelope({
+    kind: "history_state_updated",
+    manifest,
+    details,
+    tab,
+    window,
+    options,
+  });
+}
+
+function buildNavigationEnvelope({ kind, manifest, details, tab, window, options }) {
   if (details?.frameId !== undefined && details.frameId !== 0) return null;
   if (!shouldCaptureBrowserUrl(details?.url)) return null;
   const occurredAt =
@@ -183,7 +232,7 @@ export function buildNavigationCommittedEnvelope({
   };
 
   return browserObservationEnvelope({
-    kind: "navigation_committed",
+    kind,
     observedAt: occurredAt,
     payload: {
       runtime: buildRuntimeInput(manifest, occurredAt),
@@ -191,8 +240,14 @@ export function buildNavigationCommittedEnvelope({
         tabId: details.tabId,
         url: sanitizedUrl.url,
         timeStamp: Date.parse(occurredAt),
-        transitionType: details.transitionType,
-        transitionQualifiers: details.transitionQualifiers || [],
+        transitionType: NAVIGATION_TRANSITION_TYPES.has(details.transitionType)
+          ? details.transitionType
+          : undefined,
+        transitionQualifiers: Array.isArray(details.transitionQualifiers)
+          ? details.transitionQualifiers.filter((qualifier) =>
+              NAVIGATION_TRANSITION_QUALIFIERS.has(qualifier),
+            )
+          : [],
       }),
       tab: sanitizedTab,
       window: window ? sanitizeWindow(window, options) : undefined,

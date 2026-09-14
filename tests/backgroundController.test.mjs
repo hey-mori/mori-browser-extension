@@ -4,7 +4,10 @@ import {
   LAST_SNAPSHOT_KEY,
   RECENT_EVENTS_KEY,
 } from "../src/core/moriBrowserExtensionCore.js";
-import { createMoriBrowserBackground } from "../src/backgroundController.js";
+import {
+  createMoriBrowserBackground,
+  installMoriBrowserBackground,
+} from "../src/backgroundController.js";
 
 describe("background controller native transport", () => {
   it("does not read or save a diagnostic snapshot with capture off", async () => {
@@ -30,7 +33,7 @@ describe("background controller native transport", () => {
   });
 
   it("drops late window and bootstrap lookups through repeated consent changes", async () => {
-    for (const pendingKind of ["window", "bootstrap", "navigation"]) {
+    for (const pendingKind of ["window", "bootstrap", "navigation", "history"]) {
       const gate = createDeferred();
       const entered = createDeferred();
       let delay = false;
@@ -45,6 +48,7 @@ describe("background controller native transport", () => {
       delay = true;
       const pending = pendingKind === "bootstrap" ? controller.handleMessage({ type: "mori.browser.bootstrap_context" })
         : pendingKind === "navigation" ? controller.handleNavigationCommitted({ tabId: 21, frameId: 0, url: "https://example.com/late" })
+        : pendingKind === "history" ? controller.handleHistoryStateUpdated({ tabId: 21, frameId: 0, url: "https://example.com/late-history" })
         : controller.handleTabActivated({ tabId: 21, windowId: 3 });
       await entered.promise;
       await controller.setCaptureEnabled(false);
@@ -98,14 +102,25 @@ describe("background controller native transport", () => {
       timeStamp: Date.parse("2026-09-09T00:02:00.000Z"),
       transitionType: "typed",
     });
+    await controller.handleHistoryStateUpdated({
+      tabId: 21,
+      frameId: 0,
+      url: "https://user:pass@example.com/spa/next?token=456#private",
+      timeStamp: Date.parse("2026-09-14T00:03:00.000Z"),
+      transitionType: "link",
+    });
 
     const tabActivation = nativeTransport.sent.find((event) => event.kind === "tab_activated");
     const navigation = nativeTransport.sent.find((event) => event.kind === "navigation_committed");
+    const history = nativeTransport.sent.find((event) => event.kind === "history_state_updated");
 
     assert.equal(tabActivation.payload.tab.url, "https://example.com/a");
     assert.equal(navigation.payload.details.url, "https://example.com/a");
+    assert.equal(history.payload.details.url, "https://example.com/spa/next");
     assert.equal(JSON.stringify(nativeTransport.sent).includes("token=123"), false);
+    assert.equal(JSON.stringify(nativeTransport.sent).includes("token=456"), false);
     assert.equal(JSON.stringify(nativeTransport.sent).includes("secret"), false);
+    assert.equal(JSON.stringify(nativeTransport.sent).includes("#private"), false);
     assert.equal(JSON.stringify(nativeTransport.sent).includes("user:pass"), false);
   });
 
@@ -121,11 +136,83 @@ describe("background controller native transport", () => {
       frameId: 0,
       url: "https://example.com/after-off",
     });
+    await controller.handleHistoryStateUpdated({
+      tabId: 21,
+      frameId: 0,
+      url: "https://example.com/after-off-spa",
+    });
 
     assert.equal(nativeTransport.disconnects, 1);
     assert.equal(nativeTransport.sent.some((event) => event.payload?.details?.url === "https://example.com/after-off"), false);
     assert.deepEqual(runtimeApi.storage.session.data[LAST_SNAPSHOT_KEY], null);
     assert.deepEqual(runtimeApi.storage.session.data[RECENT_EVENTS_KEY], []);
+  });
+
+  it("registers the History API listener with the background lifecycle", () => {
+    const listeners = {
+      installed: createChromeEvent(),
+      startup: createChromeEvent(),
+      message: createChromeEvent(),
+      activated: createChromeEvent(),
+      committed: createChromeEvent(),
+      historyStateUpdated: createChromeEvent(),
+    };
+    const runtimeApi = {
+      runtime: {
+        onInstalled: listeners.installed,
+        onStartup: listeners.startup,
+        onMessage: listeners.message,
+      },
+      tabs: { onActivated: listeners.activated },
+      webNavigation: {
+        onCommitted: listeners.committed,
+        onHistoryStateUpdated: listeners.historyStateUpdated,
+      },
+    };
+    const calls = [];
+    const controller = {
+      initialize: async () => calls.push("initialize"),
+      handleStartup: async () => calls.push("startup"),
+      handleTabActivated: async () => calls.push("activated"),
+      handleNavigationCommitted: async () => calls.push("committed"),
+      handleHistoryStateUpdated: async () => calls.push("history_state_updated"),
+      handleMessage: async () => ({ ok: true }),
+    };
+
+    assert.equal(installMoriBrowserBackground({ runtimeApi, controller }), controller);
+    assert.equal(typeof listeners.historyStateUpdated.listener, "function");
+    listeners.historyStateUpdated.listener({ tabId: 21, frameId: 0, url: "https://example.com/app" });
+    assert.deepEqual(calls, ["history_state_updated"]);
+  });
+
+  it("retains separate query-only History API observations after sanitization", async () => {
+    const nativeTransport = createFakeTransport();
+    const controller = createMoriBrowserBackground({
+      runtimeApi: createFakeRuntimeApi(),
+      nativeTransport,
+      debugLog: noop,
+    });
+    await controller.setCaptureEnabled(true);
+
+    await controller.handleHistoryStateUpdated({
+      tabId: 21,
+      frameId: 0,
+      url: "https://example.com/search?q=one",
+    });
+    await controller.handleHistoryStateUpdated({
+      tabId: 21,
+      frameId: 0,
+      url: "https://example.com/search?q=two",
+    });
+
+    const historyEvents = nativeTransport.sent.filter(
+      (event) => event.kind === "history_state_updated",
+    );
+    assert.equal(historyEvents.length, 2);
+    assert.deepEqual(
+      historyEvents.map((event) => event.payload.details.url),
+      ["https://example.com/search", "https://example.com/search"],
+    );
   });
 
   it("drops observations whose async lookup finishes after capture is disabled", async () => {
@@ -287,4 +374,13 @@ function createDeferred() {
     reject = innerReject;
   });
   return { promise, resolve, reject };
+}
+
+function createChromeEvent() {
+  return {
+    listener: null,
+    addListener(listener) {
+      this.listener = listener;
+    },
+  };
 }

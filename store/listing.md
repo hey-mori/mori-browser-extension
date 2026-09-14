@@ -17,9 +17,10 @@ after the user explicitly turns capture on.
 
 Mori Browser Extension is a local companion for Mori Desktop. When you turn
 browser activity capture on, the extension observes active tab changes,
-committed page navigations, and the current normal window/tab snapshot. It sends
-sanitized browser observations to Mori through Chrome Native Messaging so Mori
-can build Browser Context and Browser Trace evidence on your computer.
+committed page navigations, same-document route changes made through the History
+API, and the current normal window/tab snapshot. It sends sanitized browser
+observations to Mori through Chrome Native Messaging so Mori can build Browser
+Context and Browser Trace evidence on your computer.
 
 The extension is explicit by design. Capture is off by default. When capture is
 off, no browser observations are sent to Mori and the Native Messaging

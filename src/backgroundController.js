@@ -5,6 +5,7 @@ import {
   RECENT_EVENTS_KEY,
   appendRecentEvent,
   buildContextBootstrapEnvelope,
+  buildHistoryStateUpdatedEnvelope,
   buildNavigationCommittedEnvelope,
   buildTabActivatedEnvelope,
   defaultCaptureState,
@@ -60,6 +61,20 @@ export function createMoriBrowserBackground({
     const tab = await safeGetTab(details.tabId);
     const window = tab?.windowId !== undefined ? await safeGetWindow(tab.windowId) : undefined;
     const envelope = buildNavigationCommittedEnvelope({
+      manifest: runtimeApi.runtime.getManifest(),
+      details,
+      tab,
+      window,
+    });
+    if (envelope) await recordObservation(envelope, generation);
+  }
+
+  async function handleHistoryStateUpdated(details) {
+    const generation = captureGeneration;
+    if (!(await isCaptureEnabled())) return;
+    const tab = await safeGetTab(details.tabId);
+    const window = tab?.windowId !== undefined ? await safeGetWindow(tab.windowId) : undefined;
+    const envelope = buildHistoryStateUpdatedEnvelope({
       manifest: runtimeApi.runtime.getManifest(),
       details,
       tab,
@@ -217,6 +232,7 @@ export function createMoriBrowserBackground({
 
   return {
     handleMessage,
+    handleHistoryStateUpdated,
     handleNavigationCommitted,
     handleStartup,
     handleTabActivated,
@@ -244,6 +260,10 @@ export function installMoriBrowserBackground({
 
   runtimeApi.webNavigation.onCommitted.addListener((details) => {
     void controller.handleNavigationCommitted(details);
+  });
+
+  runtimeApi.webNavigation.onHistoryStateUpdated.addListener((details) => {
+    void controller.handleHistoryStateUpdated(details);
   });
 
   runtimeApi.runtime.onMessage.addListener((message, _sender, sendResponse) => {
