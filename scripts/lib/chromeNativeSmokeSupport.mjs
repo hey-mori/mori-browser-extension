@@ -92,9 +92,12 @@ export function defaultMoriWorktree(extensionRoot) {
   return path.resolve(extensionRoot, "..", "mori-browser-native-host-dev");
 }
 
+export function nativeHostExecutableName(platform = process.platform) {
+  return platform === "win32" ? "mori-browser-native-host.exe" : "mori-browser-native-host";
+}
+
 export function defaultNativeHostPath(moriWorktree) {
-  const binary = process.platform === "win32" ? "mori-browser-native-host.exe" : "mori-browser-native-host";
-  return path.join(moriWorktree, "src-tauri", "target", "debug", binary);
+  return path.join(moriWorktree, "src-tauri", "target", "debug", nativeHostExecutableName());
 }
 
 export function resolveSmokePaths({ extensionRoot, chromePath, moriWorktree, nativeHostPath }) {
