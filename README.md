@@ -1,6 +1,19 @@
 # Mori Browser Extension
 
-Browser-side runtime companion for Mori.
+Browser-side runtime companion for [Mori](https://github.com/hey-mori/mori), a
+local-first personal context workspace.
+
+With your explicit opt-in, the extension tells the Mori desktop app which tab is
+active and which page it navigated to. By default it sends only the origin and
+path of a URL, with query strings, fragments and credentials removed, and no
+page titles. It never reads page content, cookies, form input or browser
+history, and it sends nothing anywhere except to Mori on the same computer,
+through Chromium Native Messaging.
+
+> **Status.** Pre-release. The extension is not published in the Chrome Web
+> Store; it is loaded unpacked for development. It does nothing useful without
+> the Mori desktop app, whose Windows installer registers the native host
+> `com.swarea.mori.browser` that this extension talks to.
 
 This repository owns the Chromium/WebExtension runtime layer. Mori itself owns
 Browser Context, Browser Trace, Trace projection, and semantic interpretation.
@@ -260,3 +273,25 @@ are not queued for replay.
 
 Chrome Web Store work is intentionally deferred for the live-source milestone.
 Existing packaging, icons, listing and privacy assets remain prepared locally.
+
+## Contributing
+
+Run `scripts/setup-git-hooks.sh` once per clone, then `npm run check` before
+opening a pull request. Commits follow the
+[Mori commit format](https://github.com/hey-mori/.github/blob/main/docs/commit-format.md),
+which the `commit-msg` hook and CI both check. See the organization's
+[contributing guide](https://github.com/hey-mori/.github/blob/main/CONTRIBUTING.md).
+
+## Security
+
+Report vulnerabilities privately as described in the organization's
+[security policy](https://github.com/hey-mori/.github/blob/main/SECURITY.md),
+never in an issue.
+
+## License
+
+No license has been chosen yet. Until a `LICENSE` file is added, the author
+keeps all rights to the code in this repository.
+
+Chrome and Chromium are trademarks of Google LLC. This extension is not
+affiliated with or endorsed by Google.
