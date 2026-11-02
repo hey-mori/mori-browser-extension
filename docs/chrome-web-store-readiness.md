@@ -100,7 +100,7 @@ Prepared assets:
 - `store/assets/small-promo-440x280.png`
 - `store/assets/screenshots/popup-default-1280x800.png`
 
-The icon assets are derived from Mori's generated app icon in `swarea/mori`.
+The icon assets are derived from Mori's generated app icon in `hey-mori/mori`.
 The screenshot is a Chrome-rendered capture of the extension popup default
 state with no private browser data.
 It was refreshed on 2026-09-13 for the daily-use popup: capture off, connection

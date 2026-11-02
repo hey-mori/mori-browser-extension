@@ -6,7 +6,7 @@ This repository owns the Chromium/WebExtension runtime layer. Mori itself owns
 Browser Context, Browser Trace, Trace projection, and semantic interpretation.
 
 Extracted from the initial Browser runtime prototype developed inside
-`swarea/mori`.
+`hey-mori/mori`.
 
 ## Responsibilities
 
@@ -139,7 +139,7 @@ The extension connects with `chrome.runtime.connectNative()` only after browser
 capture is explicitly enabled. Capture off means no Browser observations are
 sent and the Native Messaging port is closed.
 
-The native host is owned by `swarea/mori`. Development smoke tooling loads this
+The native host is owned by `hey-mori/mori`. Development smoke tooling loads this
 unpacked extension in an isolated Chrome profile, reads the extension id that
 Chrome assigns at runtime, and registers the native host for that id. Do not
 commit a temporary unpacked id to source.

@@ -1,10 +1,10 @@
 # Browser Live Source v1
 
 Date: 2026-09-14. Companion: Mori issues
-[#122](https://github.com/swarea/mori/issues/122) and
-[#128](https://github.com/swarea/mori/issues/128); extension issues
-[#8](https://github.com/swarea/mori-browser-extension/issues/8) and
-[#10](https://github.com/swarea/mori-browser-extension/issues/10).
+[#122](https://github.com/hey-mori/mori/issues/122) and
+[#128](https://github.com/hey-mori/mori/issues/128); extension issues
+[#8](https://github.com/hey-mori/mori-browser-extension/issues/8) and
+[#10](https://github.com/hey-mori/mori-browser-extension/issues/10).
 
 ## Contract
 
