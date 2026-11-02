@@ -1,7 +1,17 @@
+<div align="center">
+
+<img src="icons/icon-128.png" alt="" width="88" height="88">
+
 # Mori Browser Extension
 
-Browser-side runtime companion for [Mori](https://github.com/hey-mori/mori), a
-local-first personal context workspace.
+**Browser-side companion for [Mori](https://github.com/hey-mori/mori).**
+
+[Permissions](#permissions) ·
+[Privacy](#privacy) ·
+[Development](#development) ·
+[Load unpacked](#load-unpacked)
+
+</div>
 
 With your explicit opt-in, the extension tells the Mori desktop app which tab is
 active and which page it navigated to. By default it sends only the origin and
