@@ -10,6 +10,7 @@ import {
   defaultMoriWorktree,
   defaultNativeHostPath,
   isChromiumExtensionId,
+  nativeHostExecutableName,
   nativeHostManifestPath,
   parseChromeVersion,
   parseSmokeArgs,
@@ -57,17 +58,26 @@ describe("chrome native smoke support", () => {
     assert.throws(() => parseSmokeArgs(["--registration-mode", "magic"]), /temporary or existing/);
   });
 
-  it("derives local Mori and native host paths from the extension checkout", () => {
-    const extensionRoot = path.resolve("C:/dev/mori-browser-extension");
+  it("derives local Mori and native host paths using the runtime filesystem", () => {
+    const extensionRoot = path.join(path.parse(process.cwd()).root, "dev", "mori-browser-extension");
     const moriWorktree = defaultMoriWorktree(extensionRoot);
 
-    assert.equal(moriWorktree, path.resolve("C:/dev/mori-browser-native-host-dev"));
+    assert.equal(moriWorktree, path.join(path.dirname(extensionRoot), "mori-browser-native-host-dev"));
     assert.equal(
       defaultNativeHostPath(moriWorktree),
-      path.resolve(
-        "C:/dev/mori-browser-native-host-dev/src-tauri/target/debug/mori-browser-native-host.exe",
+      path.join(
+        moriWorktree,
+        "src-tauri",
+        "target",
+        "debug",
+        nativeHostExecutableName(),
       ),
     );
+  });
+
+  it("preserves the Windows native messaging executable name", () => {
+    assert.equal(nativeHostExecutableName("win32"), "mori-browser-native-host.exe");
+    assert.equal(nativeHostExecutableName("linux"), "mori-browser-native-host");
   });
 
   it("builds native host registration from the runtime extension id", () => {
