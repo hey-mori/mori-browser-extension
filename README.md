@@ -6,10 +6,16 @@
 
 **Browser-side companion for [Mori](https://github.com/hey-mori/mori).**
 
+With your opt-in, it tells the Mori desktop app which page you are on, and
+sends nothing anywhere else.
+
 [Permissions](#permissions) ·
 [Privacy](#privacy) ·
 [Development](#development) ·
 [Load unpacked](#load-unpacked)
+
+![status: pre-release](https://img.shields.io/badge/status-pre--release-6246f5)
+![license: not chosen yet](https://img.shields.io/badge/license-not%20chosen%20yet-1c1e22)
 
 </div>
 
