@@ -82,6 +82,22 @@ check_bullets() {
   done <<<"$body"
 }
 
+# The one trailer allowed is a DCO sign-off (the organization's CONTRIBUTING.md,
+# "Licence and sign-off"): a final block of `Signed-off-by: Name <email>` lines
+# after one blank line, which is where `git commit -s` puts it. It is split off
+# before the bullet rules; a sign-off anywhere else is still a non-bullet line.
+strip_signoff() {
+  printf '%s\n' "$1" | awk '
+    { line[NR] = $0 }
+    END {
+      n = NR
+      while (n > 0 && line[n] ~ /^Signed-off-by: [^<>]+ <[^<>]+>$/) n--
+      # Keep the block only when a blank line separates it from the bullets.
+      if (n < NR && n > 0) { if (line[n] == "") n--; else n = NR }
+      for (i = 1; i <= n; i++) print line[i]
+    }'
+}
+
 # `git revert` writes `Revert "<subject>"` and `This reverts commit <full sha>.`.
 # That exact shape is accepted as a special case; any other `Revert ...` subject
 # is an ordinary commit and must carry a type. A reason may follow as bullets.
@@ -94,7 +110,7 @@ if grep -qE '^Revert ".+"$' <<<"$subject"; then
   if ! grep -qE '^This reverts commit ([0-9a-f]{40}|[0-9a-f]{64})\.$' <<<"$revert_line"; then
     errors+=("a revert must keep git's 'This reverts commit <full sha>.' line under the subject")
   fi
-  check_bullets "$(printf '%s\n' "$msg" | tail -n +4)"
+  check_bullets "$(strip_signoff "$(printf '%s\n' "$msg" | tail -n +4)")"
   if (( ${#errors[@]} > 0 )); then
     printf 'commit message: %s\n' "${errors[@]}" >&2
     exit 1
@@ -133,7 +149,7 @@ fi
 # The body is one bullet list: every non-blank line is a bullet, and no blank
 # line separates two bullets (a gap makes the log read as paragraphs, the shape
 # the bullet rule exists to prevent; 9dfbe9a1 merged with exactly that).
-check_bullets "$body"
+check_bullets "$(strip_signoff "$body")"
 
 if (( ${#errors[@]} > 0 )); then
   printf 'commit message: %s\n' "${errors[@]}" >&2
