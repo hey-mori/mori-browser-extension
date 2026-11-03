@@ -15,7 +15,7 @@ sends nothing anywhere else.
 [Load unpacked](#load-unpacked)
 
 ![status: pre-release](https://img.shields.io/badge/status-pre--release-6246f5)
-![license: not chosen yet](https://img.shields.io/badge/license-not%20chosen%20yet-1c1e22)
+[![license: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-1c1e22)](LICENSE)
 
 </div>
 
@@ -306,8 +306,12 @@ never in an issue.
 
 ## License
 
-No license has been chosen yet. Until a `LICENSE` file is added, the author
-keeps all rights to the code in this repository.
+The source code in this repository is licensed under the [Mozilla Public License 2.0](LICENSE)
+(`MPL-2.0`). Copyright 2026 Isaac Lee.
+
+- Third-party dependencies keep their own licences.
+- The licence grants no rights to the Mori names or logos as trademarks.
+- Contributions are accepted under the same licence.
 
 Chrome and Chromium are trademarks of Google LLC. This extension is not
 affiliated with or endorsed by Google.
