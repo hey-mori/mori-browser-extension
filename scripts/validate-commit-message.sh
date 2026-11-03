@@ -39,7 +39,11 @@ fi
 if grep -qiE '(claude|codex|copilot|chatgpt|gemini|qwen) (code|opus|sonnet|haiku|ai|assistant)' <<<"$msg"; then
   errors+=("AI tool attribution is forbidden")
 fi
-if grep -qP '[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}]' <<<"$msg" 2>/dev/null; then
+# Matched as UTF-8 bytes under the C locale, so the rule holds under any locale
+# and any grep. grep -P needs a UTF-8 locale and the BSD grep on macOS has no
+# -P; either way the old pattern errored and the rule skipped itself silently.
+# F0 9F 8C-AB is U+1F300 to U+1FAFF, E2 98-9E is U+2600 to U+27BF.
+if LC_ALL=C grep -qE $'\xf0\x9f[\x8c-\xab]|\xe2[\x98-\x9e]' <<<"$msg"; then
   errors+=("emoji are forbidden")
 fi
 # CLAUDE.md bans U+2014 in commit messages as in all prose.

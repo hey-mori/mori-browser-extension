@@ -1,0 +1,6 @@
+# Shell scripts and git hooks run through their shebang. A CRLF checkout
+# (core.autocrlf=true, the Git for Windows default) turns `bash` into `bash\r`
+# and every hook then fails. scripts/check-line-endings.sh holds every
+# executable file to this rule.
+*.sh text eol=lf
+/.githooks/** text eol=lf
