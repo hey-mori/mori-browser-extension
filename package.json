@@ -9,6 +9,6 @@
     "package:chrome": "node scripts/package-chrome.mjs",
     "inspect:chrome-package": "node scripts/inspect-chrome-package.mjs",
     "smoke:chrome-native": "node scripts/chrome-native-smoke.mjs",
-    "check": "npm test && npm run validate && npm run package:chrome && npm run inspect:chrome-package"
+    "check": "bash scripts/check-line-endings.sh && npm test && npm run validate && npm run package:chrome && npm run inspect:chrome-package"
   }
 }
