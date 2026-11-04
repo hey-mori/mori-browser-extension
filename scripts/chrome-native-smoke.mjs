@@ -262,7 +262,10 @@ async function launchChrome({ chromePath, profileDir, env }) {
     {
       env: { ...process.env, ...env },
       stdio: ["ignore", "ignore", "pipe"],
-      windowsHide: true,
+      // Visible on purpose. Chrome 156 started with a hidden window never
+      // answered Runtime.evaluate in the popup target, so the smoke timed out
+      // before testing anything; the same run with a window passed every check.
+      windowsHide: false,
     },
   );
 
