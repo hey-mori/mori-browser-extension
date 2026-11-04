@@ -47,7 +47,8 @@ Requires Windows 10 or 11, Google Chrome or Microsoft Edge, and
    turn on Developer mode, choose *Load unpacked*, and select this repository's
    directory.
 3. **Turn capture on** from the extension's popup. The popup shows when Mori
-   last received activity, and capture stops the moment you turn it off.
+   last received activity, and capture stops the moment you turn it off. It
+   speaks Korean or English, following the browser's language.
 
 The manifest's public `key` gives the extension the same id,
 `nmkjbmmnefgglmkddfokahclckjkldek`, in every browser profile, which is what lets

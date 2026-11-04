@@ -1,0 +1,111 @@
+{
+  "extName": {
+    "message": "Mori 브라우저 확장"
+  },
+  "extDescription": {
+    "message": "켜 둔 동안 브라우저 활동을 Mori에 기록합니다."
+  },
+  "popupTitle": {
+    "message": "Mori 브라우저"
+  },
+  "captureToggle": {
+    "message": "브라우저 활동 기록"
+  },
+  "connectionRegion": {
+    "message": "Mori 연결"
+  },
+  "statusCaptureOff": {
+    "message": "기록 꺼짐"
+  },
+  "statusMoriNotRunning": {
+    "message": "Mori가 실행 중이 아닙니다"
+  },
+  "detailMoriNotRunning": {
+    "message": "Mori를 열면 다시 전달합니다."
+  },
+  "statusIntegrationUnavailable": {
+    "message": "브라우저 연결을 사용할 수 없습니다"
+  },
+  "detailIntegrationUnavailable": {
+    "message": "Mori 설치 상태를 확인하세요."
+  },
+  "statusSaveFailed": {
+    "message": "Mori가 활동을 저장하지 못했습니다"
+  },
+  "statusDeliveryInterrupted": {
+    "message": "전달이 중단되었습니다"
+  },
+  "detailDeliveryResumes": {
+    "message": "다음 브라우저 활동부터 다시 전달합니다."
+  },
+  "statusSending": {
+    "message": "Mori로 보내는 중"
+  },
+  "statusConnected": {
+    "message": "Mori에 연결됨"
+  },
+  "detailConnected": {
+    "message": "마지막 전달을 확인했습니다."
+  },
+  "statusWaiting": {
+    "message": "브라우저 활동을 기다리는 중"
+  },
+  "detailWaiting": {
+    "message": "다음 전달 때 연결을 확인합니다."
+  },
+  "statusUnavailable": {
+    "message": "브라우저 상태를 읽을 수 없습니다"
+  },
+  "detailUnavailable": {
+    "message": "확장 팝업을 다시 열어 주세요."
+  },
+  "privacyRegion": {
+    "message": "개인정보"
+  },
+  "privacyHeading": {
+    "message": "이 컴퓨터 안에서만"
+  },
+  "privacyWhat": {
+    "message": "기록이 켜져 있으면 Mori가 탭 전환, 페이지 이동, 열린 창과 탭 목록을 받습니다."
+  },
+  "privacyUrls": {
+    "message": "URL: 출처와 경로만"
+  },
+  "privacyContents": {
+    "message": "페이지 내용: 수집하지 않음"
+  },
+  "privacyNever": {
+    "message": "쿼리 문자열, 프래그먼트, 인증 정보, 페이지 제목, 입력값, 쿠키, 시크릿 탭은 보내지 않으며 방문 기록도 가져오지 않습니다."
+  },
+  "diagnostics": {
+    "message": "진단"
+  },
+  "snapshotNone": {
+    "message": "스냅샷: 없음"
+  },
+  "snapshotCounts": {
+    "message": "스냅샷: 창 $WINDOWS$개, 탭 $TABS$개",
+    "placeholders": {
+      "windows": {
+        "content": "$1",
+        "example": "2"
+      },
+      "tabs": {
+        "content": "$2",
+        "example": "9"
+      }
+    }
+  },
+  "eventCount": {
+    "message": "이벤트: $COUNT$개",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "14"
+      }
+    }
+  },
+  "refreshState": {
+    "message": "브라우저 상태 새로 고침"
+  }
+}
