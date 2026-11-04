@@ -68,8 +68,10 @@ You need Windows, Chrome or Edge, and a Mori build from source (see
      -ExtensionId nmkjbmmnefgglmkddfokahclckjkldek
    ```
 
-   Use `-Browser edge` for Edge. A Mori build whose installer registers this id
-   does this step for you.
+   Use `-Browser edge` for Edge. If you installed Mori with an installer built
+   by its `package` workflow instead of running it from source, skip this step:
+   the installer registers this id for Chrome and Edge, and uninstalling Mori
+   removes the registration.
 
 4. **Open the extension's popup and turn capture on.** The popup shows whether
    Mori received recent activity, is not running, or could not be reached.
