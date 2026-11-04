@@ -3,6 +3,7 @@
   "name": "Mori Browser Extension",
   "version": "0.1.0",
   "description": "Opt-in browser activity capture companion for Mori.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwqYnkMXXga3H+ZeupkDXhBWklhbNyvJr+7/nQJary8X2rg0ZASa0rIG8Kx4539ARfhefWloPUm7a/tBXIa+5nRjnG7uxQEvbJokVHfytZogzxp/dcc/R/iwA6vmsiqCpTBRNUjiURxh+oFRLfgIDSrpNTNymI3PX3eItIun7hsd/nxRyj267TTZz/oWzASMAERqrLTSyVOVNARkun8YQtOI1Etkz4aXDt/9+GERgqtObufMbLLrPyhlvCaw0xFOWi84mqe4stQccXGKtgME37yhoFERYCuBjkeaqAYGErER5Ep0mq8Sp2cBiZz+04MGuqjUXPBeOqcpsKhRhzuG9BQIDAQAB",
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

@@ -57,18 +57,19 @@ You need Windows, Chrome or Edge, and a Mori build from source (see
 
 2. **Load this extension unpacked.** Open `chrome://extensions` (or
    `edge://extensions`), turn on Developer mode, choose *Load unpacked*, and
-   select this repository's directory. Copy the extension id it is given.
+   select this repository's directory. The manifest's `key` gives it the same
+   id everywhere: `nmkjbmmnefgglmkddfokahclckjkldek`.
 
 3. **Register the native host for that id**, from the Mori checkout:
 
    ```powershell
    .\connectors\browser-native\install-native-host.ps1 -Browser chrome `
      -HostPath "$PWD\src-tauri\target\debug\mori-browser-native-host.exe" `
-     -ExtensionId "<your extension id>"
+     -ExtensionId nmkjbmmnefgglmkddfokahclckjkldek
    ```
 
-   Use `-Browser edge` for Edge. The unpacked id is specific to your browser
-   profile, so it is never committed to either repository.
+   Use `-Browser edge` for Edge. A Mori build whose installer registers this id
+   does this step for you.
 
 4. **Open the extension's popup and turn capture on.** The popup shows whether
    Mori received recent activity, is not running, or could not be reached.

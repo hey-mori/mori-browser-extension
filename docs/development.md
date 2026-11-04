@@ -68,16 +68,22 @@ Build the helper in a Mori checkout:
 cargo build --manifest-path src-tauri/Cargo.toml --bin mori-browser-native-host
 ```
 
-Load this repository unpacked, copy the extension id Chrome assigns, and
-register the host for it from the Mori checkout:
+Load this repository unpacked and register the host for its id from the Mori
+checkout:
 
 ```powershell
 .\connectors\browser-native\install-native-host.ps1 -Browser chrome `
   -HostPath "<mori checkout>\src-tauri\target\debug\mori-browser-native-host.exe" `
-  -ExtensionId "<actual unpacked extension id>"
+  -ExtensionId nmkjbmmnefgglmkddfokahclckjkldek
 ```
 
-Never commit a temporary unpacked id to either repository.
+The id is fixed by the public `key` in `manifest.json`, so every unpacked copy
+in Chrome or Edge has it, and Mori's installer can register it ahead of time.
+The Chrome Web Store assigns its own id and rejects a `key`, so
+`npm run package:chrome` leaves the key out of the store package; a Store
+release will need that second id registered too. Changing the key changes the
+id and breaks every existing registration, which `tests/chromePackage.test.mjs`
+guards against.
 
 ## Automated Chrome smoke
 
