@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   CHROME_PACKAGE_FILES,
   inspectChromePackage,
+  readManifest,
   readZipEntries,
   stageChromePackage,
   writeChromeZip,
@@ -31,6 +33,25 @@ describe("Chrome Web Store package", () => {
       "src/popupState.js",
       "src/transport/nativeMessagingClient.js",
     ]);
+  });
+
+  it("pins the unpacked id with a key and leaves the key out of the store package", () => {
+    // Mori's installer registers its native host for this id; changing the key
+    // changes the id and breaks that registration.
+    const manifest = readManifest(root);
+    const digest = createHash("sha256").update(Buffer.from(manifest.key, "base64")).digest("hex");
+    const id = [...digest.slice(0, 32)].map((c) => String.fromCharCode(97 + parseInt(c, 16))).join("");
+    assert.equal(id, "nmkjbmmnefgglmkddfokahclckjkldek");
+
+    const tempRoot = mkdtempSync(path.join(os.tmpdir(), "mori-chrome-package-key-"));
+    try {
+      const stagingDir = path.join(tempRoot, "stage");
+      stageChromePackage({ root, stagingDir });
+      const { key: _key, ...withoutKey } = manifest;
+      assert.deepEqual(readManifest(stagingDir), withoutKey);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it("stages and inspects the same deterministic zip entries", () => {

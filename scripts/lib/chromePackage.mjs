@@ -43,6 +43,14 @@ export function stageChromePackage({ root, stagingDir }) {
     const target = path.join(stagingDir, file);
     if (!existsSync(source)) throw new Error(`Package source missing: ${file}`);
     mkdirSync(path.dirname(target), { recursive: true });
+    if (file === "manifest.json") {
+      // The key pins the unpacked extension's id so Mori's installer can
+      // register the native host for it. The Chrome Web Store assigns its own
+      // id and does not accept a key, so the store package leaves it out.
+      const { key: _key, ...storeManifest } = readManifest(root);
+      writeFileSync(target, `${JSON.stringify(storeManifest, null, 2)}\n`);
+      continue;
+    }
     copyFileSync(source, target);
   }
 }
@@ -121,6 +129,7 @@ export function inspectChromePackage({ root, stagingDir, zipPath }) {
   assert.deepEqual(Object.keys(manifest.icons), ["16", "32", "48", "128"]);
   assert.deepEqual(Object.keys(manifest.action.default_icon), ["16", "32", "48", "128"]);
   assert.equal(JSON.stringify(manifest).includes("<all_urls>"), false);
+  assert.equal(manifest.key, undefined, "the store package must not carry the unpacked key");
 
   for (const file of stagingFiles) {
     const stagedPath = path.join(stagingDir, file);
