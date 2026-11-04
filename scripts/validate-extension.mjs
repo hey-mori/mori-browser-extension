@@ -17,8 +17,13 @@ const forbiddenPermissions = [
 ];
 
 assert.equal(manifest.manifest_version, 3);
-assert.equal(manifest.name, "Mori Browser Extension");
-assert.equal(manifest.description, "Opt-in browser activity capture companion for Mori.");
+// Name and description come from _locales; English is the default catalog.
+const english = JSON.parse(readFileSync(join(root, "_locales", "en", "messages.json"), "utf8"));
+assert.equal(manifest.default_locale, "en");
+assert.equal(manifest.name, "__MSG_extName__");
+assert.equal(manifest.description, "__MSG_extDescription__");
+assert.equal(english.extName.message, "Mori Browser Extension");
+assert.equal(english.extDescription.message, "Opt-in browser activity capture companion for Mori.");
 assert.deepEqual(manifest.permissions, ["storage", "tabs", "webNavigation", "nativeMessaging"]);
 assert.deepEqual(manifest.icons, {
   "16": "icons/icon-16.png",

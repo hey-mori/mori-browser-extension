@@ -1,0 +1,142 @@
+{
+  "extName": {
+    "message": "Mori Browser Extension",
+    "description": "Extension name in the browser and the store"
+  },
+  "extDescription": {
+    "message": "Opt-in browser activity capture companion for Mori.",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "Mori Browser",
+    "description": "Popup heading"
+  },
+  "captureToggle": {
+    "message": "Browser capture",
+    "description": "Label of the on/off switch"
+  },
+  "connectionRegion": {
+    "message": "Mori connection",
+    "description": "Accessible name of the status area"
+  },
+  "statusCaptureOff": {
+    "message": "Capture off",
+    "description": "Status when capture is off"
+  },
+  "statusMoriNotRunning": {
+    "message": "Mori isn't running",
+    "description": "Status when the desktop app is closed"
+  },
+  "detailMoriNotRunning": {
+    "message": "Open Mori Desktop to resume delivery.",
+    "description": "Detail under statusMoriNotRunning"
+  },
+  "statusIntegrationUnavailable": {
+    "message": "Browser integration unavailable",
+    "description": "Status when the native host is missing"
+  },
+  "detailIntegrationUnavailable": {
+    "message": "Check the Mori Desktop installation.",
+    "description": "Detail under statusIntegrationUnavailable"
+  },
+  "statusSaveFailed": {
+    "message": "Mori couldn't save activity",
+    "description": "Status when Mori failed to persist"
+  },
+  "statusDeliveryInterrupted": {
+    "message": "Delivery interrupted",
+    "description": "Status after another delivery error"
+  },
+  "detailDeliveryResumes": {
+    "message": "Delivery resumes with your next browser activity.",
+    "description": "Detail after a delivery error"
+  },
+  "statusSending": {
+    "message": "Sending to Mori",
+    "description": "Status while events are pending"
+  },
+  "statusConnected": {
+    "message": "Mori connected",
+    "description": "Status after a recent acknowledgement"
+  },
+  "detailConnected": {
+    "message": "Last delivery confirmed.",
+    "description": "Detail under statusConnected"
+  },
+  "statusWaiting": {
+    "message": "Waiting for browser activity",
+    "description": "Status before the first delivery"
+  },
+  "detailWaiting": {
+    "message": "Connection is checked on the next delivery.",
+    "description": "Detail under statusWaiting"
+  },
+  "statusUnavailable": {
+    "message": "Browser state unavailable",
+    "description": "Status when the popup cannot read state"
+  },
+  "detailUnavailable": {
+    "message": "Reopen the extension popup.",
+    "description": "Detail under statusUnavailable"
+  },
+  "privacyRegion": {
+    "message": "Privacy",
+    "description": "Accessible name of the privacy section"
+  },
+  "privacyHeading": {
+    "message": "On this computer",
+    "description": "Privacy section heading"
+  },
+  "privacyWhat": {
+    "message": "When capture is on, Mori receives tab changes, page navigations, and current windows and tabs.",
+    "description": "What is sent"
+  },
+  "privacyUrls": {
+    "message": "URLs: origin + path only",
+    "description": "What part of a URL is sent"
+  },
+  "privacyContents": {
+    "message": "Page contents: never captured",
+    "description": "Page content is never sent"
+  },
+  "privacyNever": {
+    "message": "No query strings, fragments, credentials, titles, form input, cookies, or incognito tabs. No browser history import.",
+    "description": "What is never sent"
+  },
+  "diagnostics": {
+    "message": "Diagnostics",
+    "description": "Diagnostics disclosure"
+  },
+  "snapshotNone": {
+    "message": "Snapshot: none",
+    "description": "No window snapshot yet"
+  },
+  "snapshotCounts": {
+    "message": "Snapshot: $WINDOWS$ windows, $TABS$ tabs",
+    "description": "Window and tab counts",
+    "placeholders": {
+      "windows": {
+        "content": "$1",
+        "example": "2"
+      },
+      "tabs": {
+        "content": "$2",
+        "example": "9"
+      }
+    }
+  },
+  "eventCount": {
+    "message": "Events: $COUNT$",
+    "description": "Recent event count",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "14"
+      }
+    }
+  },
+  "refreshState": {
+    "message": "Refresh browser state",
+    "description": "Button that resends the window snapshot"
+  }
+}

@@ -4,6 +4,8 @@ import path from "node:path";
 
 export const CHROME_PACKAGE_FILES = Object.freeze([
   "manifest.json",
+  "_locales/en/messages.json",
+  "_locales/ko/messages.json",
   "icons/icon-16.png",
   "icons/icon-32.png",
   "icons/icon-48.png",

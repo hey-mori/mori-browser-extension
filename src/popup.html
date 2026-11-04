@@ -3,28 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mori Browser</title>
+    <title data-i18n="popupTitle">Mori Browser</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <main>
-      <header><img src="../icons/icon-32.png" width="32" height="32" alt="" /><h1>Mori Browser</h1></header>
-      <label class="toggle"><span>Browser capture</span><input id="capture-toggle" type="checkbox" role="switch" /></label>
-      <section aria-label="Mori connection" role="status" aria-live="polite">
-        <h2 id="transport-status">Capture off</h2>
+      <header><img src="../icons/icon-32.png" width="32" height="32" alt="" /><h1 data-i18n="popupTitle">Mori Browser</h1></header>
+      <label class="toggle"><span data-i18n="captureToggle">Browser capture</span><input id="capture-toggle" type="checkbox" role="switch" /></label>
+      <section data-i18n-aria="connectionRegion" aria-label="Mori connection" role="status" aria-live="polite">
+        <h2 id="transport-status" data-i18n="statusCaptureOff">Capture off</h2>
         <p id="transport-detail"></p>
       </section>
-      <section class="disclosure" aria-label="Privacy">
-        <h2>On this computer</h2>
-        <p>When capture is on, Mori receives tab changes, page navigations, and current windows and tabs.</p>
-        <p>URLs: origin + path only<br />Page contents: never captured</p>
-        <p>No query strings, fragments, credentials, titles, form input, cookies, or incognito tabs. No browser history import.</p>
+      <section class="disclosure" data-i18n-aria="privacyRegion" aria-label="Privacy">
+        <h2 data-i18n="privacyHeading">On this computer</h2>
+        <p data-i18n="privacyWhat">When capture is on, Mori receives tab changes, page navigations, and current windows and tabs.</p>
+        <p><span data-i18n="privacyUrls">URLs: origin + path only</span><br /><span data-i18n="privacyContents">Page contents: never captured</span></p>
+        <p data-i18n="privacyNever">No query strings, fragments, credentials, titles, form input, cookies, or incognito tabs. No browser history import.</p>
       </section>
       <details class="debug">
-        <summary>Diagnostics</summary>
-        <p id="snapshot-status">Snapshot: none</p>
-        <p id="event-status">Events: 0</p>
-        <button id="bootstrap-button" type="button" disabled>Refresh browser state</button>
+        <summary data-i18n="diagnostics">Diagnostics</summary>
+        <p id="snapshot-status" data-i18n="snapshotNone">Snapshot: none</p>
+        <p id="event-status"></p>
+        <button id="bootstrap-button" type="button" disabled data-i18n="refreshState">Refresh browser state</button>
       </details>
     </main>
     <script src="popup.js" type="module"></script>

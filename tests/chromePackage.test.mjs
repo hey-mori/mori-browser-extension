@@ -20,6 +20,8 @@ describe("Chrome Web Store package", () => {
   it("has an explicit runtime allowlist", () => {
     assert.deepEqual(CHROME_PACKAGE_FILES, [
       "manifest.json",
+      "_locales/en/messages.json",
+      "_locales/ko/messages.json",
       "icons/icon-16.png",
       "icons/icon-32.png",
       "icons/icon-48.png",

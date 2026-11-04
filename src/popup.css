@@ -3,7 +3,7 @@
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
 }
-body { width: 320px; margin: 0; color: #202228; background: #fafafa; }
+body { width: 320px; margin: 0; color: #202228; background: #fafafa; word-break: keep-all; overflow-wrap: anywhere; }
 main { display: grid; gap: 18px; padding: 20px; }
 header { display: flex; align-items: center; gap: 10px; }
 h1, h2, p { margin: 0; }
