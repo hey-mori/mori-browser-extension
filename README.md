@@ -4,17 +4,16 @@
 
 # Mori Browser Extension
 
-**Browser-side companion for [Mori](https://github.com/hey-mori/mori).**
+**Bring the pages you work in into [Mori](https://github.com/hey-mori/mori).**
 
-With your opt-in, it tells the Mori desktop app which page you are on, and
+When you turn it on, it tells the Mori desktop app which page you are on, and
 sends nothing anywhere else.
 
-[Try it](#try-it) ·
+[Installation](#installation) ·
 [What it sends](#what-it-sends) ·
 [Permissions](#permissions) ·
 [Development](#development)
 
-![status: pre-release](https://img.shields.io/badge/status-pre--release-6246f5)
 [![license: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-1c1e22)](LICENSE)
 
 </div>
@@ -25,12 +24,6 @@ navigated to, so Mori can place that activity on the same timeline as your
 other sources. It sends only the origin and path of a URL, never reads page
 content, and talks only to the Mori app on the same computer, through Chromium
 Native Messaging.
-
-> **Status.** Pre-release, for developers. The extension is not in the Chrome
-> Web Store, and Mori itself has no release yet, so trying it means building
-> Mori from source and loading this extension unpacked. The native host that
-> connects them is Windows-only today. Chrome and Edge are the browsers the
-> host installer supports.
 
 ## How it fits together
 
@@ -43,39 +36,39 @@ The extension observes and filters. Mori owns everything after that: what an
 observation means, how it appears in the record, and how long it is kept. The
 native host, `com.swarea.mori.browser`, ships with Mori.
 
-## Try it
+## Installation
 
-You need Windows, Chrome or Edge, and a Mori build from source (see
-[Mori's build instructions](https://github.com/hey-mori/mori#build-from-source)).
+Requires Windows 10 or 11, Google Chrome or Microsoft Edge, and
+[Mori](https://github.com/hey-mori/mori).
 
-1. **Build and start Mori**, and build its native host helper from the Mori
-   checkout:
+1. **Install Mori.** Its installer registers the native messaging host that
+   connects this extension to the app, in both Chrome and Edge.
+2. **Load the extension.** Open `chrome://extensions` (or `edge://extensions`),
+   turn on Developer mode, choose *Load unpacked*, and select this repository's
+   directory.
+3. **Turn capture on** from the extension's popup. The popup shows when Mori
+   last received activity, and capture stops the moment you turn it off.
 
-   ```powershell
-   cargo build --manifest-path src-tauri/Cargo.toml --bin mori-browser-native-host
-   ```
+The manifest's public `key` gives the extension the same id,
+`nmkjbmmnefgglmkddfokahclckjkldek`, in every browser profile, which is what lets
+the installer register it in advance.
 
-2. **Load this extension unpacked.** Open `chrome://extensions` (or
-   `edge://extensions`), turn on Developer mode, choose *Load unpacked*, and
-   select this repository's directory. The manifest's `key` gives it the same
-   id everywhere: `nmkjbmmnefgglmkddfokahclckjkldek`.
+<details>
+<summary>Running Mori from source</summary>
 
-3. **Register the native host for that id**, from the Mori checkout:
+Build the native host helper and register it for the extension's id, from the
+Mori checkout:
 
-   ```powershell
-   .\connectors\browser-native\install-native-host.ps1 -Browser chrome `
-     -HostPath "$PWD\src-tauri\target\debug\mori-browser-native-host.exe" `
-     -ExtensionId nmkjbmmnefgglmkddfokahclckjkldek
-   ```
+```powershell
+cargo build --manifest-path src-tauri/Cargo.toml --bin mori-browser-native-host
+.\connectors\browser-native\install-native-host.ps1 -Browser chrome `
+  -HostPath "$PWD\src-tauri\target\debug\mori-browser-native-host.exe" `
+  -ExtensionId nmkjbmmnefgglmkddfokahclckjkldek
+```
 
-   Use `-Browser edge` for Edge. If you installed Mori with an installer built
-   by its `package` workflow instead of running it from source, skip this step:
-   the installer registers this id for Chrome and Edge, and uninstalling Mori
-   removes the registration.
+Use `-Browser edge` for Edge.
 
-4. **Open the extension's popup and turn capture on.** The popup shows whether
-   Mori received recent activity, is not running, or could not be reached.
-   Turning capture off closes the connection and stops all observation.
+</details>
 
 ## What it sends
 
@@ -129,8 +122,7 @@ plain Manifest V3 JavaScript with no build step.
 Native Messaging transport, the automated Chrome smoke test, and the manual
 check to run before a change that touches capture.
 [docs/chrome-web-store-readiness.md](docs/chrome-web-store-readiness.md) and
-[`store/`](store) hold the prepared Chrome Web Store listing. Nothing has been
-submitted to the Store.
+[`store/`](store) hold the Chrome Web Store listing and assets.
 
 ## Contributing
 
